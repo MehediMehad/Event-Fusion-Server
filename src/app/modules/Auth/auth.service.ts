@@ -10,12 +10,15 @@ import emailSender from './emailSender';
 import resetEmailTemplate from '../../../helpers/emailTemplateHelpers';
 
 const loginUser = async (payload: { email: string; password: string }) => {
-    const userData = await prisma.user.findUniqueOrThrow({
+    const userData = await prisma.user.findUnique({
         where: {
             email: payload.email,
             status: UserStatus.ACTIVE
         }
     });
+    if (!userData) {
+        throw new ApiError(httpStatus.NOT_FOUND, "User Not Found")
+    }
 
     const isCorrectPassword = await bcrypt.compare(
         payload.password,
@@ -61,12 +64,15 @@ const refreshToken = async (token: string) => {
         throw new ApiError(httpStatus.UNAUTHORIZED, 'You are not authorized!');
     }
 
-    const userData = await prisma.user.findUniqueOrThrow({
+    const userData = await prisma.user.findUnique({
         where: {
             email: decodedData?.email,
             status: UserStatus.ACTIVE
         }
     });
+    if (!userData) {
+        throw new ApiError(httpStatus.NOT_FOUND, "user Not Found")
+    }
 
     const data: TPayloadToken = {
         email: userData.email,
