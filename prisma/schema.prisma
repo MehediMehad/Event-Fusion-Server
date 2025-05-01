@@ -30,6 +30,7 @@ model Events {
   id               String     @id @default(uuid())
   title            String
   description      String
+  coverPhoto       String
   date_time        String
   venue            String
   location         String
@@ -41,7 +42,7 @@ model Events {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
-  organizerId String 
+  organizerId String
   organizer   User   @relation(name: "organizer", fields: [organizerId], references: [id]) // Added relation
 
   @@map("events")
