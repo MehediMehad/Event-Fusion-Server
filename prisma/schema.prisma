@@ -22,7 +22,7 @@ model User {
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   events             Events[]        @relation(name: "organizer")
-  Participation      Participation[]
+  participation      Participation[]
 
   @@map("users")
 }
@@ -44,7 +44,8 @@ model Events {
   updatedAt        DateTime    @updatedAt
 
   organizerId String
-  organizer   User   @relation(name: "organizer", fields: [organizerId], references: [id]) // Added relation
+  organizer   User         @relation(name: "organizer", fields: [organizerId], references: [id]) // Added relation
+  invitation  Invitation[]
 
   @@map("events")
 }
@@ -59,21 +60,45 @@ model Participation {
   joined_at      DateTime                   @default(now())
 
   // Relation
-  User User @relation(fields: [userId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  payment Payment? @relation(fields: [paymentId], references: [id])
 
   @@map("participations")
 }
 
+model Payment {
+  id               String        @id @default(uuid())
+  participation_id String        @unique
+  transactionId    String        @unique
+  amount           Float
+  payment_status   PaymentStatus
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relation
+  participation Participation[]
+
+  @@map("payments")
+}
 model Invitation {
-  id              String @id @default(uuid())
+  id              String           @id @default(uuid())
   organizerId     String
   invited_user_id String
   event_id        String
-  status  InvitationStatus @default(PENDING)
-  invited_at      DateTime                   @default(now())
-  responded_at    DateTime    @updatedAt
+  status          InvitationStatus @default(PENDING)
+  invited_at      DateTime         @default(now())
+  responded_at    DateTime         @updatedAt
+
+  event Events @relation(fields: [event_id], references: [id])
 
   @@map("invitations")
+}
+
+enum PaymentStatus {
+  PAID
+  FAILED
+  REFUNDED
 }
 
 enum InvitationStatus {
