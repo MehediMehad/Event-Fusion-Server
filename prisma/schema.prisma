@@ -23,6 +23,10 @@ model User {
   updatedAt          DateTime        @updatedAt
   events             Events[]        @relation(name: "organizer")
   participation      Participation[]
+  review             Review?
+
+  invitationsSent     Invitation[] @relation(name: "invitationsSendedUser")
+  invitationsReceived Invitation[] @relation(name: "invitationsReceived")
 
   @@map("users")
 }
@@ -46,6 +50,7 @@ model Events {
   organizerId String
   organizer   User         @relation(name: "organizer", fields: [organizerId], references: [id]) // Added relation
   invitation  Invitation[]
+  review      Review?
 
   @@map("events")
 }
@@ -81,18 +86,45 @@ model Payment {
 
   @@map("payments")
 }
+
 model Invitation {
   id              String           @id @default(uuid())
-  organizerId     String
-  invited_user_id String
+  senderId        String
+  invited_user_id String?
   event_id        String
   status          InvitationStatus @default(PENDING)
   invited_at      DateTime         @default(now())
-  responded_at    DateTime         @updatedAt
+  responded_at    DateTime?         @updatedAt
 
-  event Events @relation(fields: [event_id], references: [id])
+  sender   User   @relation(name: "invitationsSendedUser", fields: [senderId], references: [id])
+  reserver User?   @relation(name: "invitationsReceived", fields: [invited_user_id], references: [id])
+  event    Events @relation(fields: [event_id], references: [id])
 
+  @@unique([invited_user_id, event_id])
   @@map("invitations")
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  eventId    String   @unique
+  rating     Rating
+  comment    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id])
+  event Events @relation(fields: [eventId], references: [id])
+
+  @@map("Reviews")
+}
+
+enum Rating {
+  ONE
+  TWO
+  THREE
+  FOUR
+  FIVE
 }
 
 enum PaymentStatus {
