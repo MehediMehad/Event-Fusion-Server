@@ -12,7 +12,5 @@ export const userFilterableFields: string[] = [
 
 export const USER_ROLE = {
     ADMIN: UserRole.ADMIN,
-    DOCTOR: UserRole.DOCTOR,
-    PATIENT: UserRole.PATIENT,
-    SUPPER_ADMIN: UserRole.SUPPER_ADMIN
+    USER: UserRole.USER,
 } as const;

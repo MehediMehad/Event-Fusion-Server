@@ -5,7 +5,6 @@ const createEvents = z.object({
   event: z.object({
     title: z.string({ required_error: 'title is required' }),
     description: z.string({ required_error: 'description is required' }),
-    coverPhoto: z.string({ required_error: 'coverPhoto is required' }),
     date_time: z.string({ required_error: 'date_time is required' }),
     venue: z.string({ required_error: 'venue is required' }),
     location: z.string({ required_error: 'location is required' }),
