@@ -1,0 +1,35 @@
+semesterRegistration.interface.ts
+semesterRegistration.model.ts
+semesterRegistration.validation.ts
+semesterRegistration.service.ts
+semesterRegistration.controller.ts
+semesterRegistration.route.ts
+
+mkdir src/app/modules/semesterRegistration
+ 
+touch src/app/modules/Auth/auth.interface.ts
+touch src/app/modules/Auth/auth.validation.ts
+touch src/app/modules/Auth/auth.service.ts
+touch src/app/modules/Auth/auth.controller.ts
+touch src/app/modules/Auth/auth.route.ts
+
+
+
+touch specialties.interface.ts
+touch specialties.validation.ts
+touch specialties.service.ts
+touch specialties.controller.ts
+touch specialties.route.ts
+
+
+
+process.cwd() //C:\Next-Level\University-Management-Server
+
+
+require("crypto").randomBytes(64).toString('hex')
+
+
+
+pwd
+
+/c/2025/Projects/Health Care/health-care-server
