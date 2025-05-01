@@ -17,17 +17,35 @@ model User {
   role               UserRole
   gender             Gender
   needPasswordChange Boolean    @default(true)
-  isDeleted     Boolean  @default(false)
+  isDeleted          Boolean    @default(false)
   status             UserStatus @default(ACTIVE)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
+  events             Events[]   @relation(name: "organizer")
 
   @@map("users")
 }
 
+model Events {
+  id               String     @id @default(uuid())
+  title            String
+  description      String
+  date_time        String
+  venue            String
+  location         String
+  is_public        Boolean    @default(true)
+  is_paid          Boolean    @default(false)
+  registration_fee Float
+  isDeleted        Boolean    @default(false)
+  status           UserStatus @default(ACTIVE)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
+  organizerId String 
+  organizer   User   @relation(name: "organizer", fields: [organizerId], references: [id]) // Added relation
 
-
+  @@map("events")
+}
 
 enum UserRole {
   ADMIN
