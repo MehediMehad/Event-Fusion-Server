@@ -38,7 +38,7 @@ model Events {
   is_paid          Boolean    @default(false)
   registration_fee Float
   isDeleted        Boolean    @default(false)
-  status           UserStatus @default(ACTIVE)
+  status           EventStatus @default(UPCOMING)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
@@ -46,6 +46,12 @@ model Events {
   organizer   User   @relation(name: "organizer", fields: [organizerId], references: [id]) // Added relation
 
   @@map("events")
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  END
 }
 
 enum UserRole {
