@@ -75,5 +75,8 @@
         "commandCenter.border": "#3949ab88",
         "sash.hoverBorder": "#536dfe"
     },
-    "peacock.color": "#1b1f30"
+    "peacock.color": "#1b1f30",
+    "cSpell.words": [
+        "participations"
+    ]
 }

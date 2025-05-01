@@ -8,44 +8,73 @@ datasource db {
 }
 
 model User {
-  id                 String     @id @default(uuid())
+  id                 String          @id @default(uuid())
   name               String
   profilePhoto       String?
   contactNumber      String
-  email              String     @unique
+  email              String          @unique
   password           String
   role               UserRole
   gender             Gender
-  needPasswordChange Boolean    @default(true)
-  isDeleted          Boolean    @default(false)
-  status             UserStatus @default(ACTIVE)
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
-  events             Events[]   @relation(name: "organizer")
+  needPasswordChange Boolean         @default(true)
+  isDeleted          Boolean         @default(false)
+  status             UserStatus      @default(ACTIVE)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  events             Events[]        @relation(name: "organizer")
+  Participation      Participation[]
 
   @@map("users")
 }
 
 model Events {
-  id               String     @id @default(uuid())
+  id               String      @id @default(uuid())
   title            String
   description      String
   coverPhoto       String
   date_time        String
   venue            String
   location         String
-  is_public        Boolean    @default(true)
-  is_paid          Boolean    @default(false)
+  is_public        Boolean     @default(true)
+  is_paid          Boolean     @default(false)
   registration_fee Float
-  isDeleted        Boolean    @default(false)
+  isDeleted        Boolean     @default(false)
   status           EventStatus @default(UPCOMING)
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
   organizerId String
   organizer   User   @relation(name: "organizer", fields: [organizerId], references: [id]) // Added relation
 
   @@map("events")
+}
+
+model Participation {
+  id        String              @id @default(uuid())
+  userId    String
+  eventId   String
+  status    ParticipationStatus @default(PENDING)
+  payment_status  ParticipationPaymentStatus @default(FREE)
+  paymentId String?
+  joined_at DateTime            @default(now())
+
+  // Relation
+  User      User                @relation(fields: [userId], references: [id])
+
+  @@map("participations")
+}
+
+enum ParticipationPaymentStatus {
+ FREE 
+ COMPLETED
+ REFUNDED
+}
+
+enum ParticipationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  BANNED
 }
 
 enum EventStatus {
