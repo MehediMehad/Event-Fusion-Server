@@ -50,24 +50,42 @@ model Events {
 }
 
 model Participation {
-  id        String              @id @default(uuid())
-  userId    String
-  eventId   String
-  status    ParticipationStatus @default(PENDING)
-  payment_status  ParticipationPaymentStatus @default(FREE)
-  paymentId String?
-  joined_at DateTime            @default(now())
+  id             String                     @id @default(uuid())
+  userId         String
+  eventId        String
+  status         ParticipationStatus        @default(PENDING)
+  payment_status ParticipationPaymentStatus @default(FREE)
+  paymentId      String?
+  joined_at      DateTime                   @default(now())
 
   // Relation
-  User      User                @relation(fields: [userId], references: [id])
+  User User @relation(fields: [userId], references: [id])
 
   @@map("participations")
 }
 
+model Invitation {
+  id              String @id @default(uuid())
+  organizerId     String
+  invited_user_id String
+  event_id        String
+  status  InvitationStatus @default(PENDING)
+  invited_at      DateTime                   @default(now())
+  responded_at    DateTime    @updatedAt
+
+  @@map("invitations")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 enum ParticipationPaymentStatus {
- FREE 
- COMPLETED
- REFUNDED
+  FREE
+  COMPLETED
+  REFUNDED
 }
 
 enum ParticipationStatus {
