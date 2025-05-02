@@ -68,6 +68,7 @@ model Participation {
   user    User     @relation(fields: [userId], references: [id])
   payment Payment? @relation(fields: [paymentId], references: [id])
 
+  @@unique([userId, eventId])
   @@map("participations")
 }
 
@@ -94,10 +95,10 @@ model Invitation {
   event_id        String
   status          InvitationStatus @default(PENDING)
   invited_at      DateTime         @default(now())
-  responded_at    DateTime?         @updatedAt
+  respondedAt     DateTime         @updatedAt
 
   sender   User   @relation(name: "invitationsSendedUser", fields: [senderId], references: [id])
-  reserver User?   @relation(name: "invitationsReceived", fields: [invited_user_id], references: [id])
+  reserver User?  @relation(name: "invitationsReceived", fields: [invited_user_id], references: [id])
   event    Events @relation(fields: [event_id], references: [id])
 
   @@unique([invited_user_id, event_id])
@@ -172,4 +173,5 @@ enum UserStatus {
 enum Gender {
   MALE
   FEMALE
+  OTHER
 }

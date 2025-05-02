@@ -3,7 +3,6 @@ import { z } from 'zod';
 
 const registration = z.object({
     password: z.string({ required_error: 'password is required' }),
-    user: z.object({
       name: z.string({ required_error: 'name is required' }),
       email: z
         .string({ required_error: 'email is required' })
@@ -18,7 +17,6 @@ const registration = z.object({
         invalid_type_error: 'gender must be MALE, FEMALE, or OTHER',
       }),
       profilePhoto: z.string().optional(),
-    }),
   });
 
 

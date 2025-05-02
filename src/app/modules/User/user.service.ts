@@ -7,8 +7,10 @@ import { Request } from 'express';
 import { IPaginationOptions } from '../../interface/pagination';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { userSearchAbleFields } from './user.constant';
+import { jwtHelpers, TPayloadToken } from '../../../helpers/jwtHelpers';
+import config from '../../../config';
 
-const registrationNewUser = async (req: Request): Promise<User> => {
+const registrationNewUser = async (req: Request)=> {
     const file = req.file as IFile;
 
     if (file) {
@@ -20,20 +22,42 @@ const registrationNewUser = async (req: Request): Promise<User> => {
 
     const hashPassword: string = await bcrypt.hash(req.body.password, 12);
     const userData = {
-        email: req.body.user.email,
-        name: req.body.user.name,
-        contactNumber: req.body.user.contactNumber,
-        profilePhoto: req.body.user.profilePhoto,
+        email: req.body.email,
+        name: req.body.name,
+        contactNumber: req.body.contactNumber,
         password: hashPassword,
         role: UserRole.USER,
-        gender: req.body.user.gender
+        gender: req.body.gender
     };
 
     const result = await prisma.user.create({
         data: userData
     });
 
-    return result;
+
+        const data: TPayloadToken = {
+            email: userData.email,
+            role: userData.role
+        };
+    
+        const accessToken = jwtHelpers.generateToken(
+            data,
+            config.jwt.jwt_secret as string,
+            config.jwt.expires_in as string
+        ); // "5m"
+    
+        const refreshToken = jwtHelpers.generateToken(
+            data,
+            config.jwt.refresh_token_secret as string,
+            config.jwt.refresh_token_expires_in as string
+        ); // "30d"
+        
+
+    return {
+        data: result,
+        accessToken, 
+        refreshToken
+    };
 };
 
 const getAllFromDB = async (params: any, options: IPaginationOptions) => {
