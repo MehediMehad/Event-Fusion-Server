@@ -4,7 +4,7 @@ import httpStatus from 'http-status';
 import { catchAsync } from '../../../shared/catchAsync';
 import { EventService } from './events.service';
 
-const createEvent = catchAsync(async (req: Request, res: Response) => {    
+const createEvent = catchAsync(async (req: Request, res: Response) => {
     const result = await EventService.createEvent(req);
 
     sendResponse(res, {
@@ -15,7 +15,7 @@ const createEvent = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-const getAllUpcomingEvent = catchAsync(async (req: Request, res: Response) => {    
+const getAllUpcomingEvent = catchAsync(async (req: Request, res: Response) => {
     const result = await EventService.getAllUpcomingEvent();
 
     sendResponse(res, {
@@ -27,43 +27,40 @@ const getAllUpcomingEvent = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
-
     const { id } = req.params;
     const result = await EventService.getByIdFromDB(id);
-  
+
     sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: 'Event retrieval successfully',
-      data: result,
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Event retrieval successfully',
+        data: result
     });
-  });
+});
 
 const getMyEventsFromDB = catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user.userId    
+    const userId = req.user.userId;
     const result = await EventService.getMyEventsFromDB(userId);
-  
+
     sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: 'My Event retrieval successfully',
-      data: result,
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'My Event retrieval successfully',
+        data: result
     });
-  });
+});
 
 const updateIntoDB = catchAsync(async (req: Request, res: Response) => {
-
     const { id } = req.params;
     const result = await EventService.updateIntoDB(req, id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: "Event data updated!",
+        message: 'Event data updated!',
         data: result
-    })
+    });
 });
-
 
 export const EventsController = {
     createEvent,

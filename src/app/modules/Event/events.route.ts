@@ -7,32 +7,25 @@ import { EventsController } from './events.controller';
 
 const router = express.Router();
 
-router.get(
-    '/',
-    EventsController.getAllUpcomingEvent
-);
+router.get('/', EventsController.getAllUpcomingEvent);
 // get my events
 router.get(
     '/my-events',
-    auth("USER", "ADMIN"),
+    auth('USER', 'ADMIN'),
     EventsController.getMyEventsFromDB
 );
 
 // getSingleEvent
-router.get(
-    '/:id',
-    EventsController.getByIdFromDB
-);
-
-
-
+router.get('/:id', EventsController.getByIdFromDB);
 
 router.post(
     '/',
     auth(USER_ROLE.USER),
     fileUploader.upload.single('file'),
     (req: Request, res: Response, next: NextFunction) => {
-        req.body = EventsValidation.createEvents.parse(JSON.parse(req.body.data));
+        req.body = EventsValidation.createEvents.parse(
+            JSON.parse(req.body.data)
+        );
         return EventsController.createEvent(req, res, next);
     }
 );
@@ -42,10 +35,11 @@ router.put(
     auth(USER_ROLE.USER),
     fileUploader.upload.single('file'),
     (req: Request, res: Response, next: NextFunction) => {
-        req.body = EventsValidation.updateEvent.parse(JSON.parse(req.body.data));
+        req.body = EventsValidation.updateEvent.parse(
+            JSON.parse(req.body.data)
+        );
         return EventsController.updateIntoDB(req, res, next);
     }
 );
-
 
 export const EventRoutes = router;
