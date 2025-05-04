@@ -39,6 +39,18 @@ const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
     });
   });
 
+const getMyEventsFromDB = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user.userId    
+    const result = await EventService.getMyEventsFromDB(userId);
+  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'My Event retrieval successfully',
+      data: result,
+    });
+  });
+
 const updateIntoDB = catchAsync(async (req: Request, res: Response) => {
 
     const { id } = req.params;
@@ -57,5 +69,6 @@ export const EventsController = {
     createEvent,
     getAllUpcomingEvent,
     getByIdFromDB,
-    updateIntoDB
+    updateIntoDB,
+    getMyEventsFromDB
 };

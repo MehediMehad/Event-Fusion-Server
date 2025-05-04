@@ -74,6 +74,19 @@ const getByIdFromDB = async (id: string)=> {
     return result;
   };
 
+  const getMyEventsFromDB = async (id: string) => { 
+    const result = await prisma.events.findMany({
+        where: {
+            organizerId: id,
+            isDeleted: false
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    });
+    return result;
+};
+
   const updateIntoDB = async (req: Request, id: string): Promise<PrismaEvent> => {
     const file = req.file as IFile;
 
@@ -121,5 +134,6 @@ export const EventService = {
     createEvent,
     getAllUpcomingEvent,
     getByIdFromDB,
-    updateIntoDB
+    updateIntoDB,
+    getMyEventsFromDB
 };

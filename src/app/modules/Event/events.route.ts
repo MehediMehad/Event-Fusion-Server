@@ -11,12 +11,20 @@ router.get(
     '/',
     EventsController.getAllUpcomingEvent
 );
+// get my events
+router.get(
+    '/my-events',
+    auth("USER", "ADMIN"),
+    EventsController.getMyEventsFromDB
+);
 
 // getSingleEvent
 router.get(
     '/:id',
     EventsController.getByIdFromDB
 );
+
+
 
 
 router.post(
@@ -38,13 +46,6 @@ router.put(
         return EventsController.updateIntoDB(req, res, next);
     }
 );
-
-// router.patch(
-//     '/:id/status',
-//     auth(USER_ROLE.SUPPER_ADMIN, USER_ROLE.ADMIN),
-//     validateRequest(UserValidation.updateStatus),
-//     UserController.changeProfileStatus
-// )
 
 
 export const EventRoutes = router;
