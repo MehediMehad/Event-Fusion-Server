@@ -47,10 +47,11 @@ model Events {
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
-  organizerId String
-  organizer   User         @relation(name: "organizer", fields: [organizerId], references: [id]) // Added relation
-  invitation  Invitation[]
-  review      Review?
+  organizerId   String
+  organizer     User            @relation(name: "organizer", fields: [organizerId], references: [id]) // Added relation
+  invitation    Invitation[]
+  review        Review[]
+  participation Participation[]
 
   @@map("events")
 }
@@ -67,6 +68,7 @@ model Participation {
   // Relation
   user    User     @relation(fields: [userId], references: [id])
   payment Payment? @relation(fields: [paymentId], references: [id])
+  event   Events   @relation(fields: [eventId], references: [id])
 
   @@unique([userId, eventId])
   @@map("participations")

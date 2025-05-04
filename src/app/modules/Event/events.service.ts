@@ -5,6 +5,8 @@ import { IFile } from '../../interface/file';
 import { Request } from 'express';
 import httpStatus from 'http-status';
 import ApiError from '../../errors/APIError';
+import { paginationHelper } from '../../../helpers/paginationHelper';
+import { IPaginationOptions } from '../../interface/pagination';
 
 const createEvent = async (req: Request): Promise<PrismaEvent> => {
     const file = req.file as IFile;
@@ -60,30 +62,98 @@ const getAllUpcomingEvent = async () => {
 };
 
 const getByIdFromDB = async (id: string) => {
-    const result = await prisma.events.findUnique({
+    const event = await prisma.events.findUnique({
         where: {
             id,
             isDeleted: false
         },
-        include: {
-            organizer: true,
-            review: true
+        select:{
+            title: true,
+            date_time: true,
+            venue: true,
+            description: true,
+            registration_fee: true,
+            coverPhoto: true,
+            organizer: {
+                select:{
+                    id: true,
+                    name: true,
+                    email: true,
+                    profilePhoto: true,
+                }
+            },
+            review: {
+                select: {
+                    id: true,
+                    comment: true,
+                    rating: true,
+                    user: true,
+                    created_at: true,
+                }
+            },
+            invitation: true,
+            participation: true
         }
+        
     });
-    return result;
+    if (!event ) {
+        throw new Error("Event not found or deleted");
+    }
+
+        // meta data extract
+        const metadata = {
+            title: event.title,
+            date_time: event.date_time,
+            venue: event.venue,
+            description: event.description,
+            registration_fee: event.registration_fee,
+            coverPhoto: event.coverPhoto,
+            organizer : event.organizer
+        };
+            // remaining data
+    const others = {
+        review: event.review,
+        invitation: event.invitation,
+        participation: event.participation
+    };
+    
+    return {
+        metadata,
+        ...others
+    };
 };
 
-const getMyEventsFromDB = async (id: string) => {
+// TODO: 
+const getAllEventsFromDB = async (options: IPaginationOptions) => {
+    const { limit, page, skip } = paginationHelper.calculatePagination(options);
+    
+
+
+    const total = await prisma.events.count({
+        where: {
+            isDeleted: false
+        }
+    });
+
     const result = await prisma.events.findMany({
         where: {
-            organizerId: id,
             isDeleted: false
         },
         orderBy: {
             createdAt: 'desc'
-        }
+        },
+        skip: skip,
+        take: limit,
     });
-    return result;
+
+    return {
+        meta: {
+            total,
+            page,
+            limit,
+        },
+        data: result,
+    };
 };
 
 const updateIntoDB = async (req: Request, id: string): Promise<PrismaEvent> => {
@@ -120,7 +190,6 @@ const updateIntoDB = async (req: Request, id: string): Promise<PrismaEvent> => {
                 ? Number(req.body.event.registration_fee)
                 : oldData.registration_fee
     };
-    console.log(eventData);
 
     const result = await prisma.events.update({
         where: { id },
@@ -135,5 +204,5 @@ export const EventService = {
     getAllUpcomingEvent,
     getByIdFromDB,
     updateIntoDB,
-    getMyEventsFromDB
+    getAllEventsFromDB
 };

@@ -11,8 +11,8 @@ router.get('/', EventsController.getAllUpcomingEvent);
 // get my events
 router.get(
     '/my-events',
-    auth('USER', 'ADMIN'),
-    EventsController.getMyEventsFromDB
+    // auth('USER', 'ADMIN'),
+    EventsController.getAllEventsFromDB
 );
 
 // getSingleEvent

@@ -3,6 +3,8 @@ import sendResponse from '../../../shared/sendResponse';
 import httpStatus from 'http-status';
 import { catchAsync } from '../../../shared/catchAsync';
 import { EventService } from './events.service';
+import pick from '../../../shared/pick';
+import { eventFilterableFields } from './event.constants';
 
 const createEvent = catchAsync(async (req: Request, res: Response) => {
     const result = await EventService.createEvent(req);
@@ -38,9 +40,9 @@ const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-const getMyEventsFromDB = catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user.userId;
-    const result = await EventService.getMyEventsFromDB(userId);
+const getAllEventsFromDB = catchAsync(async (req: Request, res: Response) => {
+    const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+    const result = await EventService.getAllEventsFromDB(options);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -67,5 +69,5 @@ export const EventsController = {
     getAllUpcomingEvent,
     getByIdFromDB,
     updateIntoDB,
-    getMyEventsFromDB
+    getAllEventsFromDB
 };
