@@ -36,26 +36,30 @@ const createEvent = async (req: Request): Promise<PrismaEvent> => {
 
 const getUpcomingLastEvent = async () => {
     const now = new Date();
-    const formattedNow = format(now, 'yyyy-MM-dd HH:mm'); // 🔥 format 
 
-    const result = await prisma.events.findFirst({
+    const events = await prisma.events.findMany({
         where: {
             isDeleted: false,
             status: 'UPCOMING',
-            date_time: {
-                gte: formattedNow
-            }
         },
         orderBy: {
-            date_time: 'asc'
+            date_time: 'asc' // string sort
         },
-        include:{
+        include: {
             organizer: true
         }
     });
 
+    const filteredEvents = events.filter(event => {
+        const eventDate = new Date(event.date_time.replace(' ', 'T')); // 📝 string -> Date
+        return eventDate >= now;
+    });
+
+    const result = filteredEvents.length > 0 ? filteredEvents[0] : null;
+
     return result;
 };
+
 
 export const EventService = {
     createEvent,
