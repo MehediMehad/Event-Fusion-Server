@@ -30,6 +30,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
     }
 
     const data: TPayloadToken = {
+        userId: userData.id,
         email: userData.email,
         role: userData.role
     };
@@ -75,6 +76,7 @@ const refreshToken = async (token: string) => {
     }
 
     const data: TPayloadToken = {
+        userId: userData.id,
         email: userData.email,
         role: userData.role
     };
@@ -134,7 +136,7 @@ const forgotPassword = async (payload: { email: string }) => {
     });
 
     const resetPasswordToken = jwtHelpers.generateToken(
-        { email: userData.email, role: userData.role },
+        {userId: userData.id, email: userData.email, role: userData.role },
         config.reset_password.secret_token as Secret,
         config.reset_password.expires_in // "5m"
     );

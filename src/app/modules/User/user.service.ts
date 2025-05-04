@@ -36,6 +36,7 @@ const registrationNewUser = async (req: Request)=> {
 
 
         const data: TPayloadToken = {
+            userId: result.id,
             email: userData.email,
             role: userData.role
         };
