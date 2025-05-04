@@ -6,22 +6,17 @@ import { USER_ROLE } from '../User/user.constant';
 import { EventsController } from './events.controller';
 
 const router = express.Router();
-// getSingleEvent
+
 router.get(
     '/',
     EventsController.getAllUpcomingEvent
 );
 
+// getSingleEvent
 router.get(
     '/:id',
     EventsController.getByIdFromDB
 );
-
-router.get(
-    '/upcoming',
-    EventsController.getUpcomingLastEvent
-);
-
 
 
 router.post(
@@ -34,6 +29,15 @@ router.post(
     }
 );
 
+router.put(
+    '/:id',
+    auth(USER_ROLE.USER),
+    fileUploader.upload.single('file'),
+    (req: Request, res: Response, next: NextFunction) => {
+        req.body = EventsValidation.updateEvent.parse(JSON.parse(req.body.data));
+        return EventsController.updateIntoDB(req, res, next);
+    }
+);
 
 // router.patch(
 //     '/:id/status',

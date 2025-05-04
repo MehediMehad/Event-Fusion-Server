@@ -74,36 +74,52 @@ const getByIdFromDB = async (id: string)=> {
     return result;
   };
 
-const getUpcomingLastEvent = async () => {
-    const now = new Date();
+  const updateIntoDB = async (req: Request, id: string): Promise<PrismaEvent> => {
+    const file = req.file as IFile;
 
-    const events = await prisma.events.findMany({
-        where: {
-            isDeleted: false,
-            status: 'UPCOMING',
-        },
-        orderBy: {
-            date_time: 'asc' // string sort
-        },
-        include: {
-            organizer: true
+    const oldData = await prisma.events.findUniqueOrThrow({
+        where: { id }
+    });
+
+    if (file) {
+        const fileUploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+        req.body.event.coverPhoto = fileUploadToCloudinary?.secure_url || oldData.coverPhoto;
+    } else {
+        req.body.event.coverPhoto = oldData.coverPhoto;
+    }
+
+    const eventData = {
+        title: req.body.event.title ?? oldData.title,
+        description: req.body.event.description ?? oldData.description,
+        coverPhoto: req.body.event.coverPhoto,
+        date_time: req.body.event.date_time ?? oldData.date_time,
+        venue: req.body.event.venue ?? oldData.venue,
+        location: req.body.event.location ?? oldData.location,
+        is_public: req.body.event.is_public ?? oldData.is_public,
+        is_paid: req.body.event.is_paid ?? oldData.is_paid,
+        registration_fee: req.body.event.registration_fee !== undefined
+            ? Number(req.body.event.registration_fee)
+            : oldData.registration_fee
+    };
+    console.log(eventData);
+    
+
+    const result = await prisma.events.update({
+        where: { id },
+        data: {
+            ...eventData,
+            organizerId: req.user.id
         }
     });
-
-    const filteredEvents = events.filter(event => {
-        const eventDate = new Date(event.date_time.replace(' ', 'T')); // 📝 string -> Date
-        return eventDate >= now;
-    });
-
-    const result = filteredEvents.length > 0 ? filteredEvents[0] : null;
 
     return result;
 };
 
 
+
 export const EventService = {
     createEvent,
-    getUpcomingLastEvent,
     getAllUpcomingEvent,
-    getByIdFromDB
+    getByIdFromDB,
+    updateIntoDB
 };

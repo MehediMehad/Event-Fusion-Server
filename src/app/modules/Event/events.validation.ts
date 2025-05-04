@@ -19,6 +19,25 @@ const createEvents = z.object({
   }),
 });
 
+const updateEvent = z.object({
+  event: z.object({
+    title: z.string({ required_error: 'title is required' }).optional(),
+    description: z.string({ required_error: 'description is required' }).optional(),
+    date_time: z.string({ required_error: 'date_time is required' }).optional(),
+    venue: z.string({ required_error: 'venue is required' }).optional(),
+    location: z.string({ required_error: 'location is required' }).optional(),
+    is_public: z.boolean().optional().default(true).optional(),
+    is_paid: z.boolean().optional().default(false).optional(),
+    registration_fee: z
+      .number({ required_error: 'registration_fee is required' })
+      .nonnegative({ message: 'registration_fee must be positive or zero' }).optional(),
+    status: z.enum(['UPCOMING', 'ONGOING', 'COMPLETED'], {
+      required_error: 'status is required',
+    }).optional(),
+  }),
+});
+
 export const EventsValidation = {
   createEvents,
+  updateEvent
 };

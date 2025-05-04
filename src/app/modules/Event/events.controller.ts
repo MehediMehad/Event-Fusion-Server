@@ -39,21 +39,23 @@ const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
     });
   });
 
-const getUpcomingLastEvent = catchAsync(async (req: Request, res: Response) => {    
-    const result = await EventService.getUpcomingLastEvent();
+const updateIntoDB = catchAsync(async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const result = await EventService.updateIntoDB(req, id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Event created successfully!',
+        message: "Event data updated!",
         data: result
-    });
+    })
 });
 
 
 export const EventsController = {
     createEvent,
     getAllUpcomingEvent,
-    getUpcomingLastEvent,
-    getByIdFromDB
+    getByIdFromDB,
+    updateIntoDB
 };
