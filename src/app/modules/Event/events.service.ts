@@ -34,6 +34,46 @@ const createEvent = async (req: Request): Promise<PrismaEvent> => {
     return result;
 };
 
+const getAllUpcomingEvent = async () => {
+    const now = new Date();
+
+    const events = await prisma.events.findMany({
+        where: {
+            isDeleted: false,
+            status: 'UPCOMING',
+        },
+        orderBy: {
+            date_time: 'asc' // string sort
+        },
+        include: {
+            organizer: true
+        }
+    });
+
+    const filteredEvents = events.filter(event => {
+        const eventDate = new Date(event.date_time.replace(' ', 'T')); // 📝 string -> Date
+        return eventDate >= now;
+    });
+
+    
+
+    return filteredEvents;
+};
+
+const getByIdFromDB = async (id: string)=> {
+    const result = await prisma.events.findUnique({
+      where: {
+        id,
+        isDeleted: false,
+      },
+      include: {
+        organizer: true,
+        review: true,
+      },
+    });
+    return result;
+  };
+
 const getUpcomingLastEvent = async () => {
     const now = new Date();
 
@@ -63,5 +103,7 @@ const getUpcomingLastEvent = async () => {
 
 export const EventService = {
     createEvent,
-    getUpcomingLastEvent
+    getUpcomingLastEvent,
+    getAllUpcomingEvent,
+    getByIdFromDB
 };

@@ -6,12 +6,23 @@ import { USER_ROLE } from '../User/user.constant';
 import { EventsController } from './events.controller';
 
 const router = express.Router();
+// getSingleEvent
+router.get(
+    '/',
+    EventsController.getAllUpcomingEvent
+);
 
-// router.get(
-//     '/',
-//     auth(USER_ROLE.SUPPER_ADMIN, USER_ROLE.ADMIN),
-//     UserController.getAllFromDB
-// );
+router.get(
+    '/:id',
+    EventsController.getByIdFromDB
+);
+
+router.get(
+    '/upcoming',
+    EventsController.getUpcomingLastEvent
+);
+
+
 
 router.post(
     '/',
@@ -23,10 +34,6 @@ router.post(
     }
 );
 
-router.get(
-    '/upcoming',
-    EventsController.getUpcomingLastEvent
-);
 
 // router.patch(
 //     '/:id/status',

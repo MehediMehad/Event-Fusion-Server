@@ -15,6 +15,30 @@ const createEvent = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getAllUpcomingEvent = catchAsync(async (req: Request, res: Response) => {    
+    const result = await EventService.getAllUpcomingEvent();
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Event created successfully!',
+        data: result
+    });
+});
+
+const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const result = await EventService.getByIdFromDB(id);
+  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Event retrieval successfully',
+      data: result,
+    });
+  });
+
 const getUpcomingLastEvent = catchAsync(async (req: Request, res: Response) => {    
     const result = await EventService.getUpcomingLastEvent();
 
@@ -29,5 +53,7 @@ const getUpcomingLastEvent = catchAsync(async (req: Request, res: Response) => {
 
 export const EventsController = {
     createEvent,
-    getUpcomingLastEvent
+    getAllUpcomingEvent,
+    getUpcomingLastEvent,
+    getByIdFromDB
 };
