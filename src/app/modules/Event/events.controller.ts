@@ -15,7 +15,19 @@ const createEvent = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getUpcomingLastEvent = catchAsync(async (req: Request, res: Response) => {    
+    const result = await EventService.getUpcomingLastEvent();
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Event created successfully!',
+        data: result
+    });
+});
+
 
 export const EventsController = {
     createEvent,
+    getUpcomingLastEvent
 };

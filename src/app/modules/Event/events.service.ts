@@ -2,14 +2,16 @@ import { Events as PrismaEvent } from '@prisma/client';
 import prisma from '../../../shared/prisma';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { IFile } from '../../interface/file';
+import { format } from 'date-fns';
 import { Request } from 'express';
 
 const createEvent = async (req: Request): Promise<PrismaEvent> => {
     const file = req.file as IFile;
 
     if (file) {
-        const fileUploadToCloudinary = await fileUploader.uploadToCloudinary(file);
-        req.body.event.coverPhoto = fileUploadToCloudinary?.secure_url; 
+        const fileUploadToCloudinary =
+            await fileUploader.uploadToCloudinary(file);
+        req.body.event.coverPhoto = fileUploadToCloudinary?.secure_url;
     }
 
     const eventData = {
@@ -22,7 +24,7 @@ const createEvent = async (req: Request): Promise<PrismaEvent> => {
         location: req.body.event.location,
         is_public: req.body.event.is_public ?? true,
         is_paid: req.body.event.is_paid ?? false,
-        registration_fee: Number(req.body.event.registration_fee),
+        registration_fee: Number(req.body.event.registration_fee)
     };
 
     const result = await prisma.events.create({
@@ -32,7 +34,30 @@ const createEvent = async (req: Request): Promise<PrismaEvent> => {
     return result;
 };
 
+const getUpcomingLastEvent = async () => {
+    const now = new Date();
+    const formattedNow = format(now, 'yyyy-MM-dd HH:mm'); // 🔥 format 
+
+    const result = await prisma.events.findFirst({
+        where: {
+            isDeleted: false,
+            status: 'UPCOMING',
+            date_time: {
+                gte: formattedNow
+            }
+        },
+        orderBy: {
+            date_time: 'asc'
+        },
+        include:{
+            organizer: true
+        }
+    });
+
+    return result;
+};
 
 export const EventService = {
     createEvent,
+    getUpcomingLastEvent
 };

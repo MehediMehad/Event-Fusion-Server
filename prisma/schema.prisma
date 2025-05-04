@@ -41,7 +41,7 @@ model Events {
   location         String
   is_public        Boolean     @default(true)
   is_paid          Boolean     @default(false)
-  registration_fee Float
+  registration_fee Float       @default(0)
   isDeleted        Boolean     @default(false)
   status           EventStatus @default(UPCOMING)
   createdAt        DateTime    @default(now())

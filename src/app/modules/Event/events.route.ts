@@ -23,6 +23,11 @@ router.post(
     }
 );
 
+router.get(
+    '/upcoming',
+    EventsController.getUpcomingLastEvent
+);
+
 // router.patch(
 //     '/:id/status',
 //     auth(USER_ROLE.SUPPER_ADMIN, USER_ROLE.ADMIN),
