@@ -1,4 +1,4 @@
-import { Events as PrismaEvent } from '@prisma/client';
+import { Prisma, Events as PrismaEvent } from '@prisma/client';
 import prisma from '../../../shared/prisma';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { IFile } from '../../interface/file';
@@ -7,6 +7,8 @@ import httpStatus from 'http-status';
 import ApiError from '../../errors/APIError';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { IPaginationOptions } from '../../interface/pagination';
+import { IEventFilterRequest } from './events.interface';
+import { eventSearchableFields } from './event.constants';
 
 const createEvent = async (req: Request): Promise<PrismaEvent> => {
     const file = req.file as IFile;
@@ -67,7 +69,7 @@ const getByIdFromDB = async (id: string) => {
             id,
             isDeleted: false
         },
-        select:{
+        select: {
             title: true,
             date_time: true,
             venue: true,
@@ -75,11 +77,11 @@ const getByIdFromDB = async (id: string) => {
             registration_fee: true,
             coverPhoto: true,
             organizer: {
-                select:{
+                select: {
                     id: true,
                     name: true,
                     email: true,
-                    profilePhoto: true,
+                    profilePhoto: true
                 }
             },
             review: {
@@ -88,46 +90,43 @@ const getByIdFromDB = async (id: string) => {
                     comment: true,
                     rating: true,
                     user: true,
-                    created_at: true,
+                    created_at: true
                 }
             },
             invitation: true,
             participation: true
         }
-        
     });
-    if (!event ) {
-        throw new Error("Event not found or deleted");
+    if (!event) {
+        throw new Error('Event not found or deleted');
     }
 
-        // meta data extract
-        const metadata = {
-            title: event.title,
-            date_time: event.date_time,
-            venue: event.venue,
-            description: event.description,
-            registration_fee: event.registration_fee,
-            coverPhoto: event.coverPhoto,
-            organizer : event.organizer
-        };
-            // remaining data
+    // meta data extract
+    const metadata = {
+        title: event.title,
+        date_time: event.date_time,
+        venue: event.venue,
+        description: event.description,
+        registration_fee: event.registration_fee,
+        coverPhoto: event.coverPhoto,
+        organizer: event.organizer
+    };
+    // remaining data
     const others = {
         review: event.review,
         invitation: event.invitation,
         participation: event.participation
     };
-    
+
     return {
         metadata,
         ...others
     };
 };
 
-// TODO: 
+// TODO:
 const getAllEventsFromDB = async (options: IPaginationOptions) => {
     const { limit, page, skip } = paginationHelper.calculatePagination(options);
-    
-
 
     const total = await prisma.events.count({
         where: {
@@ -143,16 +142,122 @@ const getAllEventsFromDB = async (options: IPaginationOptions) => {
             createdAt: 'desc'
         },
         skip: skip,
-        take: limit,
+        take: limit
     });
 
     return {
         meta: {
             total,
             page,
-            limit,
+            limit
         },
-        data: result,
+        data: result
+    };
+};
+
+const getAllEventsDetailsPage = async (
+    filters: IEventFilterRequest,
+    options: IPaginationOptions
+) => {
+    const { limit, page, skip } = paginationHelper.calculatePagination(options);
+    const { searchTerm, filterData } = filters;
+
+    const andConditions: Prisma.EventsWhereInput[] = [];
+
+    // Rest of your filter conditions remain the same
+    if (filterData) {
+        if (filterData === 'PUBLIC_FREE') {
+            andConditions.push({
+                is_public: true,
+                is_paid: false
+            });
+        }
+        if (filterData === 'PUBLIC_PAID') {
+            andConditions.push({
+                is_public: true,
+                is_paid: true
+            });
+        }
+        if (filterData === 'PRIVATE_FREE') {
+            andConditions.push({
+                is_public: false,
+                is_paid: false
+            });
+        }
+        if (filterData === 'PRIVATE_PAID') {
+            andConditions.push({
+                is_public: false,
+                is_paid: true
+            });
+        }
+    }
+
+    const total = await prisma.events.count({
+        where: {
+            OR: [
+                {
+                    title: {
+                        contains: searchTerm,
+                        mode: 'insensitive'
+                    }
+                },
+                {
+                    organizer: {
+                        name: {
+                            contains: searchTerm,
+                            mode: 'insensitive'
+                        }
+                    }
+                }
+            ],
+            AND: andConditions
+        },
+    });
+
+
+    const result = await prisma.events.findMany({
+        where: {
+            OR: [
+                {
+                    title: {
+                        contains: searchTerm,
+                        mode: 'insensitive'
+                    }
+                },
+                {
+                    organizer: {
+                        name: {
+                            contains: searchTerm,
+                            mode: 'insensitive'
+                        }
+                    }
+                }
+            ],
+            AND: andConditions
+        },
+        include: {
+            organizer: {
+                select: {
+                    id: true,
+                    name: true
+                    // include other organizer fields you need
+                }
+            }
+        },
+        orderBy: {
+            createdAt: 'desc'
+        },
+        skip: skip,
+        take: limit
+    });
+
+    return {
+        meta: {
+            total,
+            page,
+            limit
+        },
+        data: result
     };
 };
 
@@ -164,7 +269,7 @@ const updateIntoDB = async (req: Request, id: string): Promise<PrismaEvent> => {
     });
 
     if (req.user.userId !== oldData.organizerId) {
-        throw new ApiError(httpStatus.UNAUTHORIZED, "YOU ARE UNAUTHORIZED")
+        throw new ApiError(httpStatus.UNAUTHORIZED, 'YOU ARE UNAUTHORIZED');
     }
 
     if (file) {
@@ -204,5 +309,6 @@ export const EventService = {
     getAllUpcomingEvent,
     getByIdFromDB,
     updateIntoDB,
-    getAllEventsFromDB
+    getAllEventsFromDB,
+    getAllEventsDetailsPage
 };

@@ -52,6 +52,21 @@ const getAllEventsFromDB = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+// Event Details Page
+const getAllEventsDetailsPage = catchAsync(async (req: Request, res: Response) => {
+    const filters = pick(req.query, eventFilterableFields) 
+    const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+    const result = await EventService.getAllEventsDetailsPage(filters, options);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'My Events retrieval successfully',
+        data: result
+    });
+});
+
+
 const updateIntoDB = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await EventService.updateIntoDB(req, id);
@@ -64,10 +79,12 @@ const updateIntoDB = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+
 export const EventsController = {
     createEvent,
     getAllUpcomingEvent,
     getByIdFromDB,
     updateIntoDB,
-    getAllEventsFromDB
+    getAllEventsFromDB,
+    getAllEventsDetailsPage
 };
