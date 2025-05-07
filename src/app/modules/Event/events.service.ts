@@ -1,4 +1,4 @@
-import { Prisma, Events as PrismaEvent } from '@prisma/client';
+import { ParticipationStatus, Prisma, Events as PrismaEvent } from '@prisma/client';
 import prisma from '../../../shared/prisma';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { IFile } from '../../interface/file';
@@ -70,12 +70,17 @@ const getByIdFromDB = async (id: string) => {
             isDeleted: false
         },
         select: {
+            id: true,
             title: true,
             date_time: true,
             venue: true,
             description: true,
             registration_fee: true,
             coverPhoto: true,
+            is_public: true,
+            is_paid: true,
+            location: true,
+            createdAt: true,
             organizer: {
                 select: {
                     id: true,
@@ -103,13 +108,18 @@ const getByIdFromDB = async (id: string) => {
 
     // meta data extract
     const metadata = {
+        id: event.id,
         title: event.title,
         date_time: event.date_time,
         venue: event.venue,
         description: event.description,
         registration_fee: event.registration_fee,
         coverPhoto: event.coverPhoto,
-        organizer: event.organizer
+        organizer: event.organizer,
+        is_public: event.is_public,
+        is_paid: event.is_paid,
+        location: event.location,
+        createdAt: event.createdAt
     };
     // remaining data
     const others = {
@@ -211,9 +221,8 @@ const getAllEventsDetailsPage = async (
                 }
             ],
             AND: andConditions
-        },
+        }
     });
-
 
     const result = await prisma.events.findMany({
         where: {
@@ -304,11 +313,44 @@ const updateIntoDB = async (req: Request, id: string): Promise<PrismaEvent> => {
     return result;
 };
 
+const joinEvent = async (req: Request) => {
+    const userId = req.user.userId;
+    const { joinType } = req.body;
+
+    const existingEvent = await prisma.events.findFirstOrThrow({
+        where: {
+            id: req.body.eventId
+        }
+    });
+    if (!existingEvent) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Event Not Found');
+    }
+
+    const participationData = {
+        userId: userId,
+        eventId: req.body.eventId,
+        paymentId: req.body.paymentId,
+        payment_status: req.body.payment_status
+    };
+
+    if (joinType === 'JOIN_FOR_FREE') {
+        const joinEvent = await prisma.participation.create({
+            data: {
+                ...participationData,
+                status: ParticipationStatus.APPROVED
+            }
+        });
+        return joinEvent
+    }
+
+};
+
 export const EventService = {
     createEvent,
     getAllUpcomingEvent,
     getByIdFromDB,
     updateIntoDB,
     getAllEventsFromDB,
-    getAllEventsDetailsPage
+    getAllEventsDetailsPage,
+    joinEvent
 };

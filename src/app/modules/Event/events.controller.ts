@@ -61,7 +61,7 @@ const getAllEventsDetailsPage = catchAsync(async (req: Request, res: Response) =
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'My Events retrieval successfully',
+        message: 'Events retrieval successfully',
         data: result
     });
 });
@@ -79,6 +79,17 @@ const updateIntoDB = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const joinEvent = catchAsync(async (req: Request, res: Response) => {
+    const result = await EventService.joinEvent(req);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Join Event successfully!',
+        data: result
+    });
+});
+
 
 export const EventsController = {
     createEvent,
@@ -86,5 +97,6 @@ export const EventsController = {
     getByIdFromDB,
     updateIntoDB,
     getAllEventsFromDB,
-    getAllEventsDetailsPage
+    getAllEventsDetailsPage,
+    joinEvent
 };

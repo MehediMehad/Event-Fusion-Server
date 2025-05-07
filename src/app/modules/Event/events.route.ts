@@ -4,6 +4,7 @@ import { fileUploader } from '../../../helpers/fileUploader';
 import { EventsValidation } from './events.validation';
 import { USER_ROLE } from '../User/user.constant';
 import { EventsController } from './events.controller';
+import { validateRequest } from '../../middlewares/validateRequest';
 
 const router = express.Router();
 
@@ -42,5 +43,14 @@ router.put(
         return EventsController.updateIntoDB(req, res, next);
     }
 );
+
+
+router.post(
+    '/join-event',
+    auth(USER_ROLE.USER),
+    validateRequest(EventsValidation.joinEventSchema),
+    EventsController.joinEvent
+);
+
 
 export const EventRoutes = router;
