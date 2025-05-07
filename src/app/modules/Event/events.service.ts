@@ -9,6 +9,7 @@ import { paginationHelper } from '../../../helpers/paginationHelper';
 import { IPaginationOptions } from '../../interface/pagination';
 import { IEventFilterRequest } from './events.interface';
 import { eventSearchableFields } from './event.constants';
+import { joinTypeEnum } from '../Participation/participation.controller';
 
 const createEvent = async (req: Request): Promise<PrismaEvent> => {
     const file = req.file as IFile;
@@ -333,11 +334,22 @@ const joinEvent = async (req: Request) => {
         payment_status: req.body.payment_status
     };
 
-    if (joinType === 'JOIN_FOR_FREE') {
+    if (joinType === joinTypeEnum.JOIN_FOR_FREE) {
         const joinEvent = await prisma.participation.create({
             data: {
                 ...participationData,
                 status: ParticipationStatus.APPROVED
+            }
+        });
+        return joinEvent
+    }
+
+    
+    if (joinType === joinTypeEnum.REQUEST_TO_JOIN) {
+        const joinEvent = await prisma.participation.create({
+            data: {
+                ...participationData,
+                status: ParticipationStatus.REJECTED
             }
         });
         return joinEvent
