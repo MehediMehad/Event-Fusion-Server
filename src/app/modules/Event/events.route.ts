@@ -10,14 +10,12 @@ const router = express.Router();
 
 router.get('/', EventsController.getAllUpcomingEvent);
 router.get('/all-details', EventsController.getAllEventsDetailsPage);
-// get my events
+
 router.get(
     '/my-events',
     // auth('USER', 'ADMIN'),
     EventsController.getAllEventsFromDB
 );
-
-// getSingleEvent
 router.get('/:id', EventsController.getByIdFromDB);
 
 router.post(
@@ -43,7 +41,6 @@ router.put(
         return EventsController.updateIntoDB(req, res, next);
     }
 );
-
 
 router.post(
     '/join-event',

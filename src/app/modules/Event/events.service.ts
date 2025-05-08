@@ -1,4 +1,8 @@
-import { ParticipationStatus, Prisma, Events as PrismaEvent } from '@prisma/client';
+import {
+    ParticipationStatus,
+    Prisma,
+    Events as PrismaEvent
+} from '@prisma/client';
 import prisma from '../../../shared/prisma';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { IFile } from '../../interface/file';
@@ -316,7 +320,6 @@ const updateIntoDB = async (req: Request, id: string): Promise<PrismaEvent> => {
 
 const joinEvent = async (req: Request) => {
     const userId = req.user.userId;
-    const { joinType } = req.body;
 
     const existingEvent = await prisma.events.findFirstOrThrow({
         where: {
@@ -325,6 +328,17 @@ const joinEvent = async (req: Request) => {
     });
     if (!existingEvent) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Event Not Found');
+    }
+
+    let joinType;
+    if (!existingEvent.is_public && existingEvent.registration_fee > 0) {
+        joinType = 'REQUEST_AND_PAY';
+    } else if (!existingEvent.is_public && existingEvent.registration_fee === 0) {
+        joinType = 'REQUEST_TO_JOIN';
+    } else if (existingEvent.is_public && existingEvent.registration_fee > 0) {
+        joinType = 'PAY_AND_JOIN';
+    } else {
+        joinType = 'JOIN_FOR_FREE';
     }
 
     const participationData = {
@@ -341,10 +355,9 @@ const joinEvent = async (req: Request) => {
                 status: ParticipationStatus.APPROVED
             }
         });
-        return joinEvent
+        return joinEvent;
     }
 
-    
     if (joinType === joinTypeEnum.REQUEST_TO_JOIN) {
         const joinEvent = await prisma.participation.create({
             data: {
@@ -352,9 +365,19 @@ const joinEvent = async (req: Request) => {
                 status: ParticipationStatus.REJECTED
             }
         });
-        return joinEvent
+        return joinEvent;
     }
 
+    // TODO:
+    if (joinType === joinTypeEnum.REQUEST_AND_PAY) {
+        const joinEvent = await prisma.participation.create({
+            data: {
+                ...participationData,
+                status: ParticipationStatus.REJECTED
+            }
+        });
+        return joinEvent;
+    }
 };
 
 export const EventService = {

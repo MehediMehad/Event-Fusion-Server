@@ -63,19 +63,6 @@ const joinEventSchema = z.object({
             invalid_type_error:
                 'payment_status must be FREE, COMPLETED, or REFUNDED'
         }),
-        joinType: z.enum(
-            [
-                'REQUEST_AND_PAY',
-                'REQUEST_TO_JOIN',
-                'PAY_AND_JOIN',
-                'JOIN_FOR_FREE'
-            ],
-            {
-                required_error: 'joinType is required',
-                invalid_type_error:
-                    'joinType must be REQUEST_AND_PAY, REQUEST_TO_JOIN, PAY_AND_JOIN, JOIN_FOR_FREE'
-            }
-        )
     })
 });
 
