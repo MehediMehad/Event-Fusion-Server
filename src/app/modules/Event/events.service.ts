@@ -1,7 +1,8 @@
 import {
     ParticipationStatus,
     Prisma,
-    Events as PrismaEvent
+    Events as PrismaEvent,
+    UserRole
 } from '@prisma/client';
 import prisma from '../../../shared/prisma';
 import { fileUploader } from '../../../helpers/fileUploader';
@@ -318,6 +319,7 @@ const updateIntoDB = async (req: Request, id: string): Promise<PrismaEvent> => {
     return result;
 };
 
+// TODO:
 const joinEvent = async (req: Request) => {
     const userId = req.user.userId;
 
@@ -333,7 +335,10 @@ const joinEvent = async (req: Request) => {
     let joinType;
     if (!existingEvent.is_public && existingEvent.registration_fee > 0) {
         joinType = 'REQUEST_AND_PAY';
-    } else if (!existingEvent.is_public && existingEvent.registration_fee === 0) {
+    } else if (
+        !existingEvent.is_public &&
+        existingEvent.registration_fee === 0
+    ) {
         joinType = 'REQUEST_TO_JOIN';
     } else if (existingEvent.is_public && existingEvent.registration_fee > 0) {
         joinType = 'PAY_AND_JOIN';
@@ -380,6 +385,58 @@ const joinEvent = async (req: Request) => {
     }
 };
 
+// Check if user is admin
+const isUserAdmin = async (userId: string) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true }
+    });
+
+    return user?.role === UserRole.ADMIN;
+};
+
+const deleteEvent = async (eventId: string, userId: string) => {
+    const event = await prisma.events.findUnique({
+        where: { id: eventId },
+        include: {
+            participation: true,
+            invitation: true,
+            review: true
+        }
+    });
+    if (!event) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Event not found');
+    }
+    // check permission
+    const isOrganizer = event.organizerId === userId;
+    const isAdmin = await isUserAdmin(userId);
+
+    if (!isOrganizer && !isAdmin) {
+        throw new ApiError(
+            httpStatus.UNAUTHORIZED,
+            "You can't delete this event"
+        );
+    }
+    // Start transaction to delete all relations and the event
+    const result = await prisma.$transaction([
+        // Optional: Delete related data or disconnect them
+        prisma.participation.deleteMany({
+            where: { eventId: eventId }
+        }),
+        prisma.invitation.deleteMany({
+            where: { event_id: eventId }
+        }),
+        prisma.review.deleteMany({
+            where: { eventId: eventId }
+        }),
+        // Finally delete the event
+        prisma.events.delete({
+            where: { id: eventId }
+        })
+    ]);
+    return result
+};
+
 export const EventService = {
     createEvent,
     getAllUpcomingEvent,
@@ -387,5 +444,6 @@ export const EventService = {
     updateIntoDB,
     getAllEventsFromDB,
     getAllEventsDetailsPage,
-    joinEvent
+    joinEvent,
+    deleteEvent
 };

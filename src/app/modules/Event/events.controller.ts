@@ -90,6 +90,19 @@ const joinEvent = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const deleteEvent = catchAsync(async (req: Request, res: Response) => {
+    const eventId = req.params.id
+    const userId = req.user.userId
+    const result = await EventService.deleteEvent(eventId, userId );
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Event deleted successfully!',
+        data: result
+    });
+});
+
 
 export const EventsController = {
     createEvent,
@@ -98,5 +111,6 @@ export const EventsController = {
     updateIntoDB,
     getAllEventsFromDB,
     getAllEventsDetailsPage,
-    joinEvent
+    joinEvent,
+    deleteEvent
 };
