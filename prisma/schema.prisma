@@ -93,17 +93,17 @@ model Payment {
 model Invitation {
   id              String           @id @default(uuid())
   senderId        String
-  reserverId String?
+  receiverId String?
   event_id        String
   status          InvitationStatus @default(PENDING)
   invited_at      DateTime         @default(now())
   respondedAt     DateTime         @updatedAt
 
   sender   User   @relation(name: "invitationsSendedUser", fields: [senderId], references: [id])
-  reserver User?  @relation(name: "invitationsReceived", fields: [reserverId], references: [id])
+  reserver User?  @relation(name: "invitationsReceived", fields: [receiverId], references: [id])
   event    Events @relation(fields: [event_id], references: [id])
 
-  @@unique([reserverId, event_id])
+  @@unique([receiverId, event_id])
   @@map("invitations")
 }
 
