@@ -13,7 +13,6 @@ import ApiError from '../../errors/APIError';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { IPaginationOptions } from '../../interface/pagination';
 import { IEventFilterRequest } from './events.interface';
-import { eventSearchableFields } from './event.constants';
 import { joinTypeEnum } from '../Participation/participation.controller';
 
 const createEvent = async (req: Request): Promise<PrismaEvent> => {

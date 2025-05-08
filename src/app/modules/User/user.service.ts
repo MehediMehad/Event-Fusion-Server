@@ -9,8 +9,11 @@ import { paginationHelper } from '../../../helpers/paginationHelper';
 import { userSearchAbleFields } from './user.constant';
 import { jwtHelpers, TPayloadToken } from '../../../helpers/jwtHelpers';
 import config from '../../../config';
+import ApiError from '../../errors/APIError';
+import httpStatus from 'http-status';
 
-const registrationNewUser = async (req: Request)=> {
+
+const registrationNewUser = async (req: Request) => {
     const file = req.file as IFile;
 
     if (file) {
@@ -34,29 +37,27 @@ const registrationNewUser = async (req: Request)=> {
         data: userData
     });
 
+    const data: TPayloadToken = {
+        userId: result.id,
+        email: userData.email,
+        role: userData.role
+    };
 
-        const data: TPayloadToken = {
-            userId: result.id,
-            email: userData.email,
-            role: userData.role
-        };
-    
-        const accessToken = jwtHelpers.generateToken(
-            data,
-            config.jwt.jwt_secret as string,
-            config.jwt.expires_in as string
-        ); // "5m"
-    
-        const refreshToken = jwtHelpers.generateToken(
-            data,
-            config.jwt.refresh_token_secret as string,
-            config.jwt.refresh_token_expires_in as string
-        ); // "30d"
-        
+    const accessToken = jwtHelpers.generateToken(
+        data,
+        config.jwt.jwt_secret as string,
+        config.jwt.expires_in as string
+    ); // "5m"
+
+    const refreshToken = jwtHelpers.generateToken(
+        data,
+        config.jwt.refresh_token_secret as string,
+        config.jwt.refresh_token_expires_in as string
+    ); // "30d"
 
     return {
         data: result,
-        accessToken, 
+        accessToken,
         refreshToken
     };
 };
@@ -113,7 +114,7 @@ const getAllFromDB = async (params: any, options: IPaginationOptions) => {
             needPasswordChange: true,
             status: true,
             createdAt: true,
-            updatedAt: true,
+            updatedAt: true
         }
         // include: {
         //     admin: true,
@@ -153,8 +154,76 @@ const changeProfileStatus = async (id: string, status: UserRole) => {
     return updateUserStatus;
 };
 
+const getNonParticipants = async (eventId: string) => {
+    const event = await prisma.events.findUnique({
+        where: { id: eventId },
+        include: {
+            participation: true,
+            invitation: true,
+            review: true
+        }
+    });
+    if (!event) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Event not found');
+    }
+
+    // Find all users who participated in this event
+    const participants = await prisma.participation.findMany({
+        where: {
+            eventId
+        },
+        select: {
+            userId: true
+        }
+    });
+
+    const participantIds = participants.map((p) => p.userId);
+
+    // Get all users EXCEPT:
+    // - Organizer of the event
+    // - Admins
+    // - Participants
+    const nonParticipants = await prisma.user.findMany({
+        where: {
+            AND: [
+                {
+                    id: {
+                        notIn: participantIds
+                    }
+                },
+                {
+                    id: {
+                        not: {
+                            equals: (
+                                await prisma.events.findUnique({
+                                    where: { id: eventId },
+                                    select: { organizerId: true }
+                                })
+                            )?.organizerId
+                        }
+                    }
+                },
+                {
+                    role: {
+                        not: 'ADMIN'
+                    }
+                }
+            ]
+        },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            profilePhoto: true
+        }
+    });
+
+    return nonParticipants
+};
+
 export const UserService = {
     registrationNewUser,
     getAllFromDB,
     changeProfileStatus,
+    getNonParticipants
 };

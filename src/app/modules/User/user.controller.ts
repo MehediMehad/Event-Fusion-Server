@@ -6,7 +6,7 @@ import { catchAsync } from '../../../shared/catchAsync';
 import { userFilterableFields } from './user.constant';
 import pick from '../../../shared/pick';
 
-const registrationNewUser = catchAsync(async (req: Request, res: Response) => {    
+const registrationNewUser = catchAsync(async (req: Request, res: Response) => {
     const result = await UserService.registrationNewUser(req);
 
     sendResponse(res, {
@@ -17,40 +17,48 @@ const registrationNewUser = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-
 const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
     const filters = pick(req.query, userFilterableFields);
-    const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder'])
+    const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
 
-    const result = await UserService.getAllFromDB(filters, options)
+    const result = await UserService.getAllFromDB(filters, options);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: "Users data fetched!",
+        message: 'Users data fetched!',
         meta: result.meta,
         data: result.data
-    })
+    });
 });
 
 const changeProfileStatus = catchAsync(async (req: Request, res: Response) => {
-
     const { id } = req.params;
-    const result = await UserService.changeProfileStatus(id, req.body)
+    const result = await UserService.changeProfileStatus(id, req.body);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: "Users profile status changed!",
+        message: 'Users profile status changed!',
         data: result
-    })
+    });
 });
 
+const getNonParticipants = catchAsync(async (req: Request, res: Response) => {
+    const { eventId } = req.params;
+    const result = await UserService.getNonParticipants(eventId);
 
-
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Non Participants user data fetched!',
+        data: result
+    });
+});
 
 export const UserController = {
     registrationNewUser,
     getAllFromDB,
     changeProfileStatus,
+    getNonParticipants
 };

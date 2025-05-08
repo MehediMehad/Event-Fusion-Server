@@ -14,6 +14,11 @@ router.get(
     UserController.getAllFromDB
 );
 
+router.get('/non-participants/:eventId', 
+    // auth("ADMIN", "USER"),
+    UserController.getNonParticipants
+)
+
 router.post(
     '/registration',
     fileUploader.upload.single('file'),
