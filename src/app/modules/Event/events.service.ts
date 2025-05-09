@@ -104,7 +104,19 @@ const getByIdFromDB = async (id: string) => {
                 }
             },
             invitation: true,
-            participation: true
+            participation: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            profilePhoto: true,
+                            email: true
+                        },
+
+                    }
+                }
+            }
         }
     });
     if (!event) {
@@ -229,7 +241,7 @@ const getAllEventsDetailsPage = async (
         }
     });
 
-    const result = await prisma.events.findMany({
+    const events = await prisma.events.findMany({
         where: {
             OR: [
                 {
@@ -265,13 +277,19 @@ const getAllEventsDetailsPage = async (
         take: limit
     });
 
+    const now = new Date();
+    const filteredEvents = events.filter((event) => {
+        const eventDate = new Date(event.date_time.replace(' ', 'T')); // 📝 string -> Date
+        return eventDate >= now;
+    });
+
     return {
         meta: {
             total,
             page,
             limit
         },
-        data: result
+        data: filteredEvents
     };
 };
 

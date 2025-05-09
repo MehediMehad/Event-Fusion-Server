@@ -5,7 +5,16 @@ const createEvents = z.object({
     event: z.object({
         title: z.string({ required_error: 'title is required' }),
         description: z.string({ required_error: 'description is required' }),
-        date_time: z.string({ required_error: 'date_time is required' }),
+        date_time: z.string({ required_error: 'date_time is required' }).refine(
+            (value) => {
+                const eventDate = new Date(value);
+                const now = new Date();
+                return eventDate >= now;
+            },
+            {
+                message: 'date_time cannot be in the past'
+            }
+        ),
         venue: z.string({ required_error: 'venue is required' }),
         location: z.string({ required_error: 'location is required' }),
         is_public: z.boolean().optional().default(true),
@@ -31,6 +40,16 @@ const updateEvent = z.object({
             .optional(),
         date_time: z
             .string({ required_error: 'date_time is required' })
+            .refine(
+                (value) => {
+                    const eventDate = new Date(value);
+                    const now = new Date();
+                    return eventDate >= now;
+                },
+                {
+                    message: 'date_time cannot be in the past'
+                }
+            )
             .optional(),
         venue: z.string({ required_error: 'venue is required' }).optional(),
         location: z
@@ -62,7 +81,7 @@ const joinEventSchema = z.object({
             required_error: 'payment_status is required',
             invalid_type_error:
                 'payment_status must be FREE, COMPLETED, or REFUNDED'
-        }),
+        })
     })
 });
 
