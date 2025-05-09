@@ -13,7 +13,7 @@ import ApiError from '../../errors/APIError';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { IPaginationOptions } from '../../interface/pagination';
 import { IEventFilterRequest } from './events.interface';
-import { joinTypeEnum } from '../Participation/participation.controller';
+import { joinTypeEnum } from '../Participation/participation.constents';
 
 const createEvent = async (req: Request): Promise<PrismaEvent> => {
     const file = req.file as IFile;
@@ -384,7 +384,7 @@ const joinEvent = async (req: Request) => {
         const joinEvent = await prisma.participation.create({
             data: {
                 ...participationData,
-                status: ParticipationStatus.REJECTED
+                status: ParticipationStatus.PENDING
             }
         });
         return joinEvent;

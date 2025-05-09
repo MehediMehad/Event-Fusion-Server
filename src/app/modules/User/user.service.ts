@@ -217,7 +217,6 @@ const getNonParticipants = async (eventId: string) => {
             profilePhoto: true
         }
     });
-
     return nonParticipants
 };
 

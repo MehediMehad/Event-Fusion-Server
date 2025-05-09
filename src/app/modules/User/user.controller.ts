@@ -46,6 +46,7 @@ const changeProfileStatus = catchAsync(async (req: Request, res: Response) => {
 
 const getNonParticipants = catchAsync(async (req: Request, res: Response) => {
     const { eventId } = req.params;
+    // const userId = req.user.userId;
     const result = await UserService.getNonParticipants(eventId);
 
     sendResponse(res, {
