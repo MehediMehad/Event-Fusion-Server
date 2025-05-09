@@ -109,9 +109,9 @@ model Invitation {
 
 model Review {
   id         String   @id @default(uuid())
-  userId     String // not unique anymore (fixed below)
+  userId     String 
   eventId    String
-  rating     Int
+  rating     String
   comment    String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
