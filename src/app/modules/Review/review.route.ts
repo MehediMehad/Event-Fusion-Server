@@ -14,4 +14,10 @@ router.post(
   ReviewsController.sendReview
 );
 
+router.get(
+  '/:eventId',
+  auth(UserRole.USER),
+  ReviewsController.getReview
+);
+
 export const ReviewsRoutes = router;
