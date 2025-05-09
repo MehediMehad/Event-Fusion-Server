@@ -72,7 +72,48 @@ const notification = async (userId: string) => {
     return pendingInvitations;
 };
 
+const acceptDeclineInvitation = async (
+    invitationId: string,
+    userId: string,
+    status: string
+) => {
+    // Check if the invitation exists and receiver is this user
+    const invitation = await prisma.invitation.findFirst({
+        where: {
+            id: invitationId,
+            receiverId: userId
+        }
+    });
+
+    if (!invitation) {
+        throw new ApiError(
+            httpStatus.NOT_FOUND,
+            'Invitation not found or you are not authorized to respond.'
+        );
+    }
+
+    // Convert string to enum
+    const enumStatus = status as InvitationStatus;
+
+    // Update the status and respondedAt timestamp
+    const updatedInvitation = await prisma.invitation.update({
+        where: {
+            id: invitationId
+        },
+        data: {
+            status: enumStatus
+        },
+        include: {
+            sender: true,
+            event: true
+        }
+    });
+
+    return updatedInvitation;
+};
+
 export const InvitationsService = {
     sendInviteUser,
-    notification
+    notification,
+    acceptDeclineInvitation
 };
