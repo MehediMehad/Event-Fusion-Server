@@ -40,9 +40,9 @@ const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-const getAllEventsFromDB = catchAsync(async (req: Request, res: Response) => {
-    const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
-    const result = await EventService.getAllEventsFromDB(options);
+const getMyEventsFromDB = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user.userId
+    const result = await EventService.getMyEventsFromDB(userId);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -109,7 +109,7 @@ export const EventsController = {
     getAllUpcomingEvent,
     getByIdFromDB,
     updateIntoDB,
-    getAllEventsFromDB,
+    getMyEventsFromDB,
     getAllEventsDetailsPage,
     joinEvent,
     deleteEvent

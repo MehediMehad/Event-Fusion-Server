@@ -13,8 +13,8 @@ router.get('/all-details', EventsController.getAllEventsDetailsPage);
 
 router.get(
     '/my-events',
-    // auth('USER', 'ADMIN'),
-    EventsController.getAllEventsFromDB
+    auth('USER', 'ADMIN'),
+    EventsController.getMyEventsFromDB
 );
 router.get('/:id', EventsController.getByIdFromDB);
 

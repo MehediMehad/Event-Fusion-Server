@@ -1,4 +1,5 @@
 import {
+    InvitationStatus,
     ParticipationStatus,
     Prisma,
     Events as PrismaEvent,
@@ -151,36 +152,45 @@ const getByIdFromDB = async (id: string) => {
     };
 };
 
-// TODO:
-const getAllEventsFromDB = async (options: IPaginationOptions) => {
-    const { limit, page, skip } = paginationHelper.calculatePagination(options);
-
-    const total = await prisma.events.count({
-        where: {
-            isDeleted: false
+const getMyEventsFromDB = async (userId: string) => {
+    const events = await prisma.events.findMany({
+      where: {
+        organizerId: userId,
+        isDeleted: false, // optional, if you want to exclude deleted events
+      },
+      include: {
+        organizer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profilePhoto: true
+          }
+        },
+        invitation: {
+          where: {
+            status: InvitationStatus.ACCEPTED // optional: only count accepted invites
+          },
+          select: {
+            id: true
+          }
+        },
+        participation: {
+          where: {
+            status: ParticipationStatus.APPROVED // optional: only count confirmed participants
+          },
+          select: {
+            id: true
+          }
         }
+      },
+      orderBy: {
+        date_time: "asc" // or 'desc' based on your need
+      }
     });
-
-    const result = await prisma.events.findMany({
-        where: {
-            isDeleted: false
-        },
-        orderBy: {
-            createdAt: 'desc'
-        },
-        skip: skip,
-        take: limit
-    });
-
-    return {
-        meta: {
-            total,
-            page,
-            limit
-        },
-        data: result
-    };
-};
+  
+    return events;
+  };
 
 const getAllEventsDetailsPage = async (
     filters: IEventFilterRequest,
@@ -459,7 +469,7 @@ export const EventService = {
     getAllUpcomingEvent,
     getByIdFromDB,
     updateIntoDB,
-    getAllEventsFromDB,
+    getMyEventsFromDB,
     getAllEventsDetailsPage,
     joinEvent,
     deleteEvent
