@@ -7,11 +7,16 @@ import { InvitationSValidation } from './invitation.validation';
 
 const router = express.Router();
 
+router.get('/notification',
+    auth("ADMIN","USER"),
+    InvitationsController.notification
+)
 
 router.post('/:eventId/invite', 
     auth("ADMIN", "USER"),
     validateRequest(InvitationSValidation.sendInviteUserValidationSchema),
     InvitationsController.sendInviteUser);
+
 
 
 export const InvitationsRoutes = router;

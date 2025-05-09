@@ -26,6 +26,23 @@ const sendInviteUser = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const notification = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, 'User not authenticated');
+    }
+    const result = await InvitationsService.notification(userId);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Pending notifications fetched successfully!',
+        data: result
+    });
+});
+
 export const InvitationsController = {
-    sendInviteUser
+    sendInviteUser,
+    notification
 };
