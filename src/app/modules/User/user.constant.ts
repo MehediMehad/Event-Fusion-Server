@@ -9,8 +9,7 @@ export const userFilterableFields: string[] = [
     'searchTerm'
 ]; // for all filtering
 
-
 export const USER_ROLE = {
     ADMIN: UserRole.ADMIN,
-    USER: UserRole.USER,
+    USER: UserRole.USER
 } as const;

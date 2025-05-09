@@ -8,18 +8,12 @@ router.post('/login', AuthController.loginUser);
 router.post('/refresh-token', AuthController.refreshToken);
 router.post(
     '/change-password',
-    auth('ADMIN', 'DOCTOR', 'PATIENT', 'SUPPER_ADMIN'),
+    auth('ADMIN', 'USER'),
     AuthController.changePassword
 );
 
-router.post(
-    '/forgot-password',
-    AuthController.forgotPassword
-);
+router.post('/forgot-password', AuthController.forgotPassword);
 
-router.post(
-    '/reset-password',
-    AuthController.resetPassword
-);
+router.post('/reset-password', AuthController.resetPassword);
 
 export const AuthRouter = router;

@@ -49,8 +49,6 @@ router.post(
     EventsController.joinEvent
 );
 
-router.delete('/:id', 
-    auth("ADMIN", "USER"),
-    EventsController.deleteEvent);
+router.delete('/:id', auth('ADMIN', 'USER'), EventsController.deleteEvent);
 
 export const EventRoutes = router;

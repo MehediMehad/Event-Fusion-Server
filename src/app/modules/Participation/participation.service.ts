@@ -3,10 +3,21 @@ import httpStatus from 'http-status';
 import prisma from '../../../shared/prisma';
 import { ParticipationStatus } from '@prisma/client';
 
-const participationStatusUpdate = async (userId: string, eventId: string, status: string) => {
+const participationStatusUpdate = async (
+    userId: string,
+    eventId: string,
+    status: string
+) => {
     // Check if status is valid
-    if (!Object.values(ParticipationStatus).includes(status as ParticipationStatus)) {
-        throw new ApiError(httpStatus.BAD_REQUEST, `Invalid status. Allowed values: ${Object.values(ParticipationStatus).join(', ')}`);
+    if (
+        !Object.values(ParticipationStatus).includes(
+            status as ParticipationStatus
+        )
+    ) {
+        throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            `Invalid status. Allowed values: ${Object.values(ParticipationStatus).join(', ')}`
+        );
     }
 
     // Convert string to enum
@@ -23,7 +34,7 @@ const participationStatusUpdate = async (userId: string, eventId: string, status
     });
 
     if (!existingParticipation) {
-        throw new ApiError(httpStatus.NOT_FOUND, "Participation not found");
+        throw new ApiError(httpStatus.NOT_FOUND, 'Participation not found');
     }
 
     // Update the status

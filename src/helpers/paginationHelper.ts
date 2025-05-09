@@ -1,10 +1,9 @@
 type IOptions = {
-    page?: number,
-    limit?: number,
-    sortOrder?: string,
-    sortBy?: string
-}
-
+    page?: number;
+    limit?: number;
+    sortOrder?: string;
+    sortBy?: string;
+};
 
 type IOptionsResults = {
     page: number;

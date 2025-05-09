@@ -21,14 +21,10 @@ const auth = (...roles: UserRole[]) => {
                 config.jwt.jwt_secret as Secret
             );
 
-            req.user = verifyUser
-
+            req.user = verifyUser;
 
             if (roles.length && !roles.includes(verifyUser.role)) {
-                throw new ApiError(
-                    httpStatus.FORBIDDEN,
-                    'Forbidden!'
-                );
+                throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden!');
             }
             next();
         } catch (error) {

@@ -44,27 +44,39 @@ const notification = catchAsync(async (req: Request, res: Response) => {
 
 // invitation.controller.ts
 
-const acceptDeclineInvitation = catchAsync(async (req: Request, res: Response) => {
-    const { status, invitationId } = req.body; // 'ACCEPTED' or 'REJECTED'
-    const userId = req.user?.userId;
+const acceptDeclineInvitation = catchAsync(
+    async (req: Request, res: Response) => {
+        const { status, invitationId } = req.body; // 'ACCEPTED' or 'REJECTED'
+        const userId = req.user?.userId;
 
-    if (!userId) {
-        throw new ApiError(httpStatus.UNAUTHORIZED, 'User not authenticated');
+        if (!userId) {
+            throw new ApiError(
+                httpStatus.UNAUTHORIZED,
+                'User not authenticated'
+            );
+        }
+
+        if (!status || !['ACCEPTED', 'REJECTED'].includes(status)) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                'Valid status is required (ACCEPTED/REJECTED)'
+            );
+        }
+
+        const result = await InvitationsService.acceptDeclineInvitation(
+            invitationId,
+            userId,
+            status
+        );
+
+        sendResponse(res, {
+            statusCode: httpStatus.OK,
+            success: true,
+            message: `Invitation ${status.toLowerCase()} successfully!`,
+            data: result
+        });
     }
-
-    if (!status || !['ACCEPTED', 'REJECTED'].includes(status)) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Valid status is required (ACCEPTED/REJECTED)');
-    }
-
-    const result = await InvitationsService.acceptDeclineInvitation(invitationId, userId, status);
-
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: `Invitation ${status.toLowerCase()} successfully!`,
-        data: result
-    });
-});
+);
 
 export const InvitationsController = {
     sendInviteUser,

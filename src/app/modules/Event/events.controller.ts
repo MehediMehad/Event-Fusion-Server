@@ -41,7 +41,7 @@ const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getMyEventsFromDB = catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user.userId
+    const userId = req.user.userId;
     const result = await EventService.getMyEventsFromDB(userId);
 
     sendResponse(res, {
@@ -53,19 +53,28 @@ const getMyEventsFromDB = catchAsync(async (req: Request, res: Response) => {
 });
 
 // Event Details Page
-const getAllEventsDetailsPage = catchAsync(async (req: Request, res: Response) => {
-    const filters = pick(req.query, eventFilterableFields) 
-    const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
-    const result = await EventService.getAllEventsDetailsPage(filters, options);
+const getAllEventsDetailsPage = catchAsync(
+    async (req: Request, res: Response) => {
+        const filters = pick(req.query, eventFilterableFields);
+        const options = pick(req.query, [
+            'limit',
+            'page',
+            'sortBy',
+            'sortOrder'
+        ]);
+        const result = await EventService.getAllEventsDetailsPage(
+            filters,
+            options
+        );
 
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: 'Events retrieval successfully',
-        data: result
-    });
-});
-
+        sendResponse(res, {
+            statusCode: httpStatus.OK,
+            success: true,
+            message: 'Events retrieval successfully',
+            data: result
+        });
+    }
+);
 
 const updateIntoDB = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -91,9 +100,9 @@ const joinEvent = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deleteEvent = catchAsync(async (req: Request, res: Response) => {
-    const eventId = req.params.id
-    const userId = req.user.userId
-    const result = await EventService.deleteEvent(eventId, userId );
+    const eventId = req.params.id;
+    const userId = req.user.userId;
+    const result = await EventService.deleteEvent(eventId, userId);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -102,7 +111,6 @@ const deleteEvent = catchAsync(async (req: Request, res: Response) => {
         data: result
     });
 });
-
 
 export const EventsController = {
     createEvent,

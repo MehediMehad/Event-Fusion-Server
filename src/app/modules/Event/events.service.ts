@@ -113,8 +113,7 @@ const getByIdFromDB = async (id: string) => {
                             name: true,
                             profilePhoto: true,
                             email: true
-                        },
-
+                        }
                     }
                 }
             }
@@ -154,43 +153,43 @@ const getByIdFromDB = async (id: string) => {
 
 const getMyEventsFromDB = async (userId: string) => {
     const events = await prisma.events.findMany({
-      where: {
-        organizerId: userId,
-        isDeleted: false, // optional, if you want to exclude deleted events
-      },
-      include: {
-        organizer: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            profilePhoto: true
-          }
+        where: {
+            organizerId: userId,
+            isDeleted: false // optional, if you want to exclude deleted events
         },
-        invitation: {
-          where: {
-            status: InvitationStatus.ACCEPTED // optional: only count accepted invites
-          },
-          select: {
-            id: true
-          }
+        include: {
+            organizer: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    profilePhoto: true
+                }
+            },
+            invitation: {
+                where: {
+                    status: InvitationStatus.ACCEPTED // optional: only count accepted invites
+                },
+                select: {
+                    id: true
+                }
+            },
+            participation: {
+                where: {
+                    status: ParticipationStatus.APPROVED // optional: only count confirmed participants
+                },
+                select: {
+                    id: true
+                }
+            }
         },
-        participation: {
-          where: {
-            status: ParticipationStatus.APPROVED // optional: only count confirmed participants
-          },
-          select: {
-            id: true
-          }
+        orderBy: {
+            date_time: 'asc' // or 'desc' based on your need
         }
-      },
-      orderBy: {
-        date_time: "asc" // or 'desc' based on your need
-      }
     });
-  
+
     return events;
-  };
+};
 
 const getAllEventsDetailsPage = async (
     filters: IEventFilterRequest,
@@ -461,7 +460,7 @@ const deleteEvent = async (eventId: string, userId: string) => {
             where: { id: eventId }
         })
     ]);
-    return result
+    return result;
 };
 
 export const EventService = {

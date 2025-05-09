@@ -12,7 +12,6 @@ import config from '../../../config';
 import ApiError from '../../errors/APIError';
 import httpStatus from 'http-status';
 
-
 const registrationNewUser = async (req: Request) => {
     const file = req.file as IFile;
 
@@ -217,7 +216,7 @@ const getNonParticipants = async (eventId: string) => {
             profilePhoto: true
         }
     });
-    return nonParticipants
+    return nonParticipants;
 };
 
 export const UserService = {

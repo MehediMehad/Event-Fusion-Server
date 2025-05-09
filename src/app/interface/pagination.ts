@@ -3,4 +3,4 @@ export type IPaginationOptions = {
     limit?: number;
     sortBy?: string | undefined;
     sortOrder?: string | undefined;
-}
+};

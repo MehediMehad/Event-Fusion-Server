@@ -8,16 +8,12 @@ import { ReviewsValidation } from './review.validation';
 const router = express.Router();
 
 router.post(
-  '/',
-  auth(UserRole.USER),
-  validateRequest(ReviewsValidation.createReviewSchema),
-  ReviewsController.sendReview
+    '/',
+    auth(UserRole.USER),
+    validateRequest(ReviewsValidation.createReviewSchema),
+    ReviewsController.sendReview
 );
 
-router.get(
-  '/:eventId',
-  auth(UserRole.USER),
-  ReviewsController.getReview
-);
+router.get('/:eventId', auth(UserRole.USER), ReviewsController.getReview);
 
 export const ReviewsRoutes = router;

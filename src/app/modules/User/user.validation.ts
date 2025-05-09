@@ -3,22 +3,21 @@ import { z } from 'zod';
 
 const registration = z.object({
     password: z.string({ required_error: 'password is required' }),
-      name: z.string({ required_error: 'name is required' }),
-      email: z
+    name: z.string({ required_error: 'name is required' }),
+    email: z
         .string({ required_error: 'email is required' })
         .email({ message: 'provide a valid email' }),
-      contactNumber: z
+    contactNumber: z
         .string({ required_error: 'contact number is required' })
         .regex(/^\d+$/, { message: 'Contact number must be a number' })
         .min(10, { message: 'Contact number must be at least 10 digits' })
         .max(15, { message: 'Contact number must be at most 15 digits' }),
-      gender: z.enum(['MALE', 'FEMALE', 'OTHER'], {
+    gender: z.enum(['MALE', 'FEMALE', 'OTHER'], {
         required_error: 'gender is required',
-        invalid_type_error: 'gender must be MALE, FEMALE, or OTHER',
-      }),
-      profilePhoto: z.string().optional(),
-  });
-
+        invalid_type_error: 'gender must be MALE, FEMALE, or OTHER'
+    }),
+    profilePhoto: z.string().optional()
+});
 
 const updateStatus = z.object({
     body: z.object({

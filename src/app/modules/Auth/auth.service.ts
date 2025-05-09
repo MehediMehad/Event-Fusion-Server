@@ -17,7 +17,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
         }
     });
     if (!userData) {
-        throw new ApiError(httpStatus.NOT_FOUND, "User Not Found")
+        throw new ApiError(httpStatus.NOT_FOUND, 'User Not Found');
     }
 
     const isCorrectPassword = await bcrypt.compare(
@@ -72,7 +72,7 @@ const refreshToken = async (token: string) => {
         }
     });
     if (!userData) {
-        throw new ApiError(httpStatus.NOT_FOUND, "user Not Found")
+        throw new ApiError(httpStatus.NOT_FOUND, 'user Not Found');
     }
 
     const data: TPayloadToken = {
@@ -136,7 +136,7 @@ const forgotPassword = async (payload: { email: string }) => {
     });
 
     const resetPasswordToken = jwtHelpers.generateToken(
-        {userId: userData.id, email: userData.email, role: userData.role },
+        { userId: userData.id, email: userData.email, role: userData.role },
         config.reset_password.secret_token as Secret,
         config.reset_password.expires_in // "5m"
     );
@@ -145,20 +145,20 @@ const forgotPassword = async (payload: { email: string }) => {
         config.reset_password.link +
         `?userId=${userData.id}&token=${resetPasswordToken}}`;
 
-    await emailSender(userData.email,
-       resetEmailTemplate(resetPasswordLink)
-    );
+    await emailSender(userData.email, resetEmailTemplate(resetPasswordLink));
 
     // http://localhost:3000/reset-pass?email=mehedi3@gmail.com&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ
-    
+
     return {
         message: 'Password changed successfully!'
     };
 };
 
-const resetPassword = async (token: string, payload: { id: string, password: string }) => {
+const resetPassword = async (
+    token: string,
+    payload: { id: string; password: string }
+) => {
     console.log(164, token);
-    
 
     await prisma.user.findUniqueOrThrow({
         where: {
@@ -167,11 +167,13 @@ const resetPassword = async (token: string, payload: { id: string, password: str
         }
     });
 
-    const isValidToken = jwtHelpers.verifyToken(token, config.reset_password.secret_token as Secret)
-    
+    const isValidToken = jwtHelpers.verifyToken(
+        token,
+        config.reset_password.secret_token as Secret
+    );
 
     if (!isValidToken) {
-        throw new ApiError(httpStatus.FORBIDDEN, "Forbidden!")
+        throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden!');
     }
 
     // hash password
@@ -185,7 +187,7 @@ const resetPassword = async (token: string, payload: { id: string, password: str
         data: {
             password
         }
-    })
+    });
 };
 
 export const AuthService = {

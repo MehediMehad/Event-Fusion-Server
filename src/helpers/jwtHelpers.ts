@@ -1,7 +1,7 @@
 import jwt, { JwtPayload, Secret, SignOptions } from 'jsonwebtoken';
 
 export interface TPayloadToken {
-    userId: string
+    userId: string;
     email: string;
     role: string;
 }

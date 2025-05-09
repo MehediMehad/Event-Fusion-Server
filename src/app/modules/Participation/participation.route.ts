@@ -5,10 +5,10 @@ import { ParticipationController } from './participation.controller';
 
 const router = express.Router();
 
-
-router.put('/status-update', 
-    auth("ADMIN", "USER"),
-    ParticipationController.participationStatusUpdate);
-
+router.put(
+    '/status-update',
+    auth('ADMIN', 'USER'),
+    ParticipationController.participationStatusUpdate
+);
 
 export const ParticipationRoutes = router;

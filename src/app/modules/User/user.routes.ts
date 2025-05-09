@@ -8,16 +8,13 @@ import { validateRequest } from '../../middlewares/validateRequest';
 
 const router = express.Router();
 
-router.get(
-    '/',
-    auth(USER_ROLE.ADMIN),
-    UserController.getAllFromDB
-);
+router.get('/', auth(USER_ROLE.ADMIN), UserController.getAllFromDB);
 
-router.get('/non-participants/:eventId', 
+router.get(
+    '/non-participants/:eventId',
     // auth("ADMIN", "USER"),
     UserController.getNonParticipants
-)
+);
 
 router.post(
     '/registration',
@@ -33,7 +30,6 @@ router.patch(
     auth(USER_ROLE.ADMIN),
     validateRequest(UserValidation.updateStatus),
     UserController.changeProfileStatus
-)
-
+);
 
 export const UserRoutes = router;

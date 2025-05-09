@@ -32,8 +32,7 @@ const moduleRoutes = [
     {
         path: '/participation',
         route: ParticipationRoutes
-    },
-
+    }
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

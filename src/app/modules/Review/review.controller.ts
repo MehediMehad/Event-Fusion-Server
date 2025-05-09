@@ -15,7 +15,7 @@ const sendReview = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getReview = catchAsync(async (req: Request, res: Response) => {
-    const {eventId} = req.params
+    const { eventId } = req.params;
     const result = await ReviewsService.getReview(eventId);
     sendResponse(res, {
         statusCode: httpStatus.OK,
