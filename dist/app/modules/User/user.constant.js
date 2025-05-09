@@ -11,5 +11,5 @@ exports.userFilterableFields = [
 ]; // for all filtering
 exports.USER_ROLE = {
     ADMIN: client_1.UserRole.ADMIN,
-    USER: client_1.UserRole.USER,
+    USER: client_1.UserRole.USER
 };

@@ -21,7 +21,7 @@ const APIError_1 = __importDefault(require("../../errors/APIError"));
 const participationStatusUpdate = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, eventId, status } = req.body;
     if (!userId || !eventId || !status) {
-        throw new APIError_1.default(http_status_1.default.BAD_REQUEST, "userId, eventId and status are required");
+        throw new APIError_1.default(http_status_1.default.BAD_REQUEST, 'userId, eventId and status are required');
     }
     const result = yield participation_service_1.ParticipationService.participationStatusUpdate(userId, eventId, status);
     (0, sendResponse_1.default)(res, {

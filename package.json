@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "md": "npx prisma migrate dev",
+    "prod": "NODE_ENV=production node ./dist/server.js",
+    "postinstall": "prisma generate",
     "lint": "npx eslint src/**/*.ts",
     "build": "tsc",
     "lint:fix": "npx eslint src/**/*.ts --fix"

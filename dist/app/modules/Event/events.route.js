@@ -25,5 +25,5 @@ router.put('/:id', (0, auth_1.default)(user_constant_1.USER_ROLE.USER), fileUplo
     return events_controller_1.EventsController.updateIntoDB(req, res, next);
 });
 router.post('/join-event', (0, auth_1.default)(user_constant_1.USER_ROLE.USER), (0, validateRequest_1.validateRequest)(events_validation_1.EventsValidation.joinEventSchema), events_controller_1.EventsController.joinEvent);
-router.delete('/:id', (0, auth_1.default)("ADMIN", "USER"), events_controller_1.EventsController.deleteEvent);
+router.delete('/:id', (0, auth_1.default)('ADMIN', 'USER'), events_controller_1.EventsController.deleteEvent);
 exports.EventRoutes = router;

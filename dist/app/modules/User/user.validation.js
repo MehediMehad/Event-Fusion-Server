@@ -16,9 +16,9 @@ const registration = zod_1.z.object({
         .max(15, { message: 'Contact number must be at most 15 digits' }),
     gender: zod_1.z.enum(['MALE', 'FEMALE', 'OTHER'], {
         required_error: 'gender is required',
-        invalid_type_error: 'gender must be MALE, FEMALE, or OTHER',
+        invalid_type_error: 'gender must be MALE, FEMALE, or OTHER'
     }),
-    profilePhoto: zod_1.z.string().optional(),
+    profilePhoto: zod_1.z.string().optional()
 });
 const updateStatus = zod_1.z.object({
     body: zod_1.z.object({

@@ -63,7 +63,7 @@ const loginUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         }
     });
     if (!userData) {
-        throw new APIError_1.default(http_status_1.default.NOT_FOUND, "User Not Found");
+        throw new APIError_1.default(http_status_1.default.NOT_FOUND, 'User Not Found');
     }
     const isCorrectPassword = yield bcrypt.compare(payload.password, userData.password);
     if (!isCorrectPassword) {
@@ -97,7 +97,7 @@ const refreshToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
         }
     });
     if (!userData) {
-        throw new APIError_1.default(http_status_1.default.NOT_FOUND, "user Not Found");
+        throw new APIError_1.default(http_status_1.default.NOT_FOUND, 'user Not Found');
     }
     const data = {
         userId: userData.id,
@@ -162,7 +162,7 @@ const resetPassword = (token, payload) => __awaiter(void 0, void 0, void 0, func
     });
     const isValidToken = jwtHelpers_1.jwtHelpers.verifyToken(token, config_1.default.reset_password.secret_token);
     if (!isValidToken) {
-        throw new APIError_1.default(http_status_1.default.FORBIDDEN, "Forbidden!");
+        throw new APIError_1.default(http_status_1.default.FORBIDDEN, 'Forbidden!');
     }
     // hash password
     const password = yield bcrypt.hash(payload.password, 12);

@@ -15,6 +15,7 @@ import { paginationHelper } from '../../../helpers/paginationHelper';
 import { IPaginationOptions } from '../../interface/pagination';
 import { IEventFilterRequest } from './events.interface';
 import { joinTypeEnum } from '../Participation/participation.constents';
+import { isDateInFuture } from '../../utils/dateHelpers';
 
 const createEvent = async (req: Request): Promise<PrismaEvent> => {
     const file = req.file as IFile;
@@ -48,25 +49,23 @@ const createEvent = async (req: Request): Promise<PrismaEvent> => {
 const getAllUpcomingEvent = async () => {
     const now = new Date();
 
-    const events = await prisma.events.findMany({
-        where: {
-            isDeleted: false,
-            status: 'UPCOMING'
-        },
-        orderBy: {
-            date_time: 'asc' // string sort
-        },
-        include: {
-            organizer: true
-        }
+    const upcomingEvents = await prisma.events.findMany({
+        where: { is_public: true, status: 'UPCOMING' },
+        orderBy: { date_time: 'asc' },
+        include: { organizer: true }
     });
 
-    const filteredEvents = events.filter((event) => {
-        const eventDate = new Date(event.date_time.replace(' ', 'T')); // 📝 string -> Date
-        return eventDate >= now;
+    const heroEvent = await prisma.events.findFirst({
+        where: { heroSection: true },
+        orderBy: { updatedAt: 'asc' },
+        include: { organizer: true }
     });
 
-    return filteredEvents;
+    const filteredEvents = upcomingEvents
+        .filter(({ date_time }) => isDateInFuture(date_time, now))
+        .slice(0, 9);
+
+    return { filteredEvents, heroEvent };
 };
 
 const getByIdFromDB = async (id: string) => {

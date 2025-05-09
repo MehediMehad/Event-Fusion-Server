@@ -108,7 +108,7 @@ const getByIdFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
                             name: true,
                             profilePhoto: true,
                             email: true
-                        },
+                        }
                     }
                 }
             }
@@ -144,7 +144,7 @@ const getMyEventsFromDB = (userId) => __awaiter(void 0, void 0, void 0, function
     const events = yield prisma_1.default.events.findMany({
         where: {
             organizerId: userId,
-            isDeleted: false, // optional, if you want to exclude deleted events
+            isDeleted: false // optional, if you want to exclude deleted events
         },
         include: {
             organizer: {
@@ -173,7 +173,7 @@ const getMyEventsFromDB = (userId) => __awaiter(void 0, void 0, void 0, function
             }
         },
         orderBy: {
-            date_time: "asc" // or 'desc' based on your need
+            date_time: 'asc' // or 'desc' based on your need
         }
     });
     return events;

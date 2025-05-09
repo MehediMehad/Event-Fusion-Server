@@ -34,7 +34,7 @@ const participationStatusUpdate = (userId, eventId, status) => __awaiter(void 0,
         }
     });
     if (!existingParticipation) {
-        throw new APIError_1.default(http_status_1.default.NOT_FOUND, "Participation not found");
+        throw new APIError_1.default(http_status_1.default.NOT_FOUND, 'Participation not found');
     }
     // Update the status
     const updatedParticipation = yield prisma_1.default.participation.update({

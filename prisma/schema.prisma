@@ -40,6 +40,7 @@ model Events {
   venue            String
   location         String
   is_public        Boolean     @default(true)
+  heroSection      Boolean     @default(false)
   is_paid          Boolean     @default(false)
   registration_fee Float       @default(0)
   isDeleted        Boolean     @default(false)

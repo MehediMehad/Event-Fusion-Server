@@ -60,7 +60,12 @@ const getMyEventsFromDB = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(v
 // Event Details Page
 const getAllEventsDetailsPage = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const filters = (0, pick_1.default)(req.query, event_constants_1.eventFilterableFields);
-    const options = (0, pick_1.default)(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+    const options = (0, pick_1.default)(req.query, [
+        'limit',
+        'page',
+        'sortBy',
+        'sortOrder'
+    ]);
     const result = yield events_service_1.EventService.getAllEventsDetailsPage(filters, options);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,

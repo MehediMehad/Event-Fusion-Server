@@ -35,7 +35,7 @@ const moduleRoutes = [
     {
         path: '/participation',
         route: participation_route_1.ParticipationRoutes
-    },
+    }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 exports.default = router;
