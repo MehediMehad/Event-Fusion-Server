@@ -23,10 +23,10 @@ model User {
   updatedAt          DateTime        @updatedAt
   events             Events[]        @relation(name: "organizer")
   participation      Participation[]
-  review             Review?
 
   invitationsSent     Invitation[] @relation(name: "invitationsSendedUser")
   invitationsReceived Invitation[] @relation(name: "invitationsReceived")
+  review              Review[]
 
   @@map("users")
 }
@@ -50,8 +50,8 @@ model Events {
   organizerId   String
   organizer     User            @relation(name: "organizer", fields: [organizerId], references: [id]) // Added relation
   invitation    Invitation[]
-  review        Review[]
   participation Participation[]
+  review        Review[]
 
   @@map("events")
 }
@@ -91,13 +91,13 @@ model Payment {
 }
 
 model Invitation {
-  id              String           @id @default(uuid())
-  senderId        String
-  receiverId String?
-  event_id        String
-  status          InvitationStatus @default(PENDING)
-  invited_at      DateTime         @default(now())
-  respondedAt     DateTime         @updatedAt
+  id          String           @id @default(uuid())
+  senderId    String
+  receiverId  String?
+  event_id    String
+  status      InvitationStatus @default(PENDING)
+  invited_at  DateTime         @default(now())
+  respondedAt DateTime         @updatedAt
 
   sender   User   @relation(name: "invitationsSendedUser", fields: [senderId], references: [id])
   reserver User?  @relation(name: "invitationsReceived", fields: [receiverId], references: [id])
@@ -109,9 +109,9 @@ model Invitation {
 
 model Review {
   id         String   @id @default(uuid())
-  userId     String   @unique
-  eventId    String   @unique
-  rating     Rating
+  userId     String // not unique anymore (fixed below)
+  eventId    String
+  rating     Int
   comment    String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -119,16 +119,10 @@ model Review {
   user  User   @relation(fields: [userId], references: [id])
   event Events @relation(fields: [eventId], references: [id])
 
+  @@unique([userId, eventId], name: "userId_eventId") // explicitly name it
   @@map("Reviews")
 }
 
-enum Rating {
-  ONE
-  TWO
-  THREE
-  FOUR
-  FIVE
-}
 
 enum PaymentStatus {
   PAID
