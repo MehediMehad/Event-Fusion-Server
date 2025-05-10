@@ -5,6 +5,7 @@ import { catchAsync } from '../../../shared/catchAsync';
 import { EventService } from './events.service';
 import pick from '../../../shared/pick';
 import { eventFilterableFields } from './event.constants';
+import { ToggleHeroSectionInput } from './events.interface';
 
 const createEvent = catchAsync(async (req: Request, res: Response) => {
     const result = await EventService.createEvent(req);
@@ -88,6 +89,18 @@ const updateIntoDB = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const addHeroSection = catchAsync(async (req: Request, res: Response) => {
+    const { eventId } = req.body;
+    const result = await EventService.addHeroSection(eventId);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Event data updated!',
+        data: result
+    });
+});
+
 const joinEvent = catchAsync(async (req: Request, res: Response) => {
     const result = await EventService.joinEvent(req);
 
@@ -117,6 +130,7 @@ export const EventsController = {
     getAllUpcomingEvent,
     getByIdFromDB,
     updateIntoDB,
+    addHeroSection,
     getMyEventsFromDB,
     getAllEventsDetailsPage,
     joinEvent,

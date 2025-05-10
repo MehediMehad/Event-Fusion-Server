@@ -13,7 +13,10 @@ import httpStatus from 'http-status';
 import ApiError from '../../errors/APIError';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { IPaginationOptions } from '../../interface/pagination';
-import { IEventFilterRequest } from './events.interface';
+import {
+    IEventFilterRequest,
+    ToggleHeroSectionInput
+} from './events.interface';
 import { joinTypeEnum } from '../Participation/participation.constents';
 import { isDateInFuture } from '../../utils/dateHelpers';
 
@@ -43,6 +46,28 @@ const createEvent = async (req: Request): Promise<PrismaEvent> => {
         data: eventData
     });
 
+    return result;
+};
+
+const addHeroSection = async (eventId: string) => {
+    const result = await prisma.$transaction(async (txc) => {
+        // Step 1: Turn off heroSection for all events
+        await txc.events.updateMany({
+            where: {
+                heroSection: true
+            },
+            data: {
+                heroSection: false
+            }
+        });
+        // Update only the target event's heroSection to true
+        const updatedEvent = await txc.events.update({
+            where: { id: eventId },
+            data: { heroSection: true }
+        });
+
+        return updatedEvent;
+    });
     return result;
 };
 
@@ -467,6 +492,7 @@ export const EventService = {
     getAllUpcomingEvent,
     getByIdFromDB,
     updateIntoDB,
+    addHeroSection,
     getMyEventsFromDB,
     getAllEventsDetailsPage,
     joinEvent,

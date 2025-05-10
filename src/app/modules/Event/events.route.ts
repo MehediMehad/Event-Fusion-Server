@@ -16,6 +16,7 @@ router.get(
     auth('USER', 'ADMIN'),
     EventsController.getMyEventsFromDB
 );
+
 router.get('/:id', EventsController.getByIdFromDB);
 
 router.post(
@@ -31,6 +32,12 @@ router.post(
 );
 
 router.put(
+    '/add-to-hero-section',
+    auth("ADMIN", "USER"),
+    EventsController.addHeroSection
+);
+
+router.put(
     '/:id',
     auth(USER_ROLE.USER),
     fileUploader.upload.single('file'),
@@ -42,12 +49,14 @@ router.put(
     }
 );
 
+
 router.post(
     '/join-event',
     auth(USER_ROLE.USER),
     validateRequest(EventsValidation.joinEventSchema),
     EventsController.joinEvent
 );
+
 
 router.delete('/:id', auth('ADMIN', 'USER'), EventsController.deleteEvent);
 
