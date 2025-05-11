@@ -57,7 +57,7 @@ const sendInviteUser = async (
     return invitation;
 };
 
-const notification = async (userId: string) => {
+const myPendingNotification = async (userId: string) => {
     const pendingInvitations = await prisma.invitation.findMany({
         where: {
             receiverId: userId,
@@ -66,10 +66,30 @@ const notification = async (userId: string) => {
         include: {
             sender: true,
             event: true
+        },
+        orderBy: {
+            invited_at: 'desc' // Newest first
         }
     });
 
     return pendingInvitations;
+};
+
+const getNotification = async (userId: string) => {
+    const getNotification = await prisma.invitation.findMany({
+        where: {
+            receiverId: userId
+        },
+        include: {
+            sender: true,
+            event: true
+        },
+        orderBy: {
+            invited_at: 'desc' // Newest first
+        }
+    });
+
+    return getNotification;
 };
 
 const acceptDeclineInvitation = async (
@@ -114,6 +134,7 @@ const acceptDeclineInvitation = async (
 
 export const InvitationsService = {
     sendInviteUser,
-    notification,
+    myPendingNotification,
+    getNotification,
     acceptDeclineInvitation
 };

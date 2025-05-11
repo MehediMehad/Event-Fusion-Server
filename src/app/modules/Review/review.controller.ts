@@ -25,7 +25,19 @@ const getReview = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getMyReview = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId;
+    const result = await ReviewsService.getMyReview(userId);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'My Review get successfully!',
+        data: result
+    });
+});
+
 export const ReviewsController = {
     sendReview,
-    getReview
+    getReview,
+    getMyReview
 };

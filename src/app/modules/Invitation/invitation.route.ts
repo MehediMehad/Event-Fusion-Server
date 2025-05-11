@@ -8,9 +8,15 @@ import { InvitationSValidation } from './invitation.validation';
 const router = express.Router();
 
 router.get(
-    '/notification',
+    '/my-pending-notification',
     auth('ADMIN', 'USER'),
-    InvitationsController.notification
+    InvitationsController.myPendingNotification
+);
+
+router.get(
+    '/get-notification',
+    auth('ADMIN', 'USER'),
+    InvitationsController.getNotification
 );
 
 router.post(

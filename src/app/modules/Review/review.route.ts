@@ -14,6 +14,7 @@ router.post(
     ReviewsController.sendReview
 );
 
-router.get('/:eventId', auth(UserRole.USER), ReviewsController.getReview);
+router.get('/get-my-review', auth(UserRole.USER), ReviewsController.getMyReview);
+router.get('/single/:eventId', auth(UserRole.USER), ReviewsController.getReview);
 
 export const ReviewsRoutes = router;

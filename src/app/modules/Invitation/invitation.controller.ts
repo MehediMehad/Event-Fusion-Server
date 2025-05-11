@@ -26,18 +26,34 @@ const sendInviteUser = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-const notification = catchAsync(async (req: Request, res: Response) => {
+const myPendingNotification = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user?.userId;
 
     if (!userId) {
         throw new ApiError(httpStatus.UNAUTHORIZED, 'User not authenticated');
     }
-    const result = await InvitationsService.notification(userId);
+    const result = await InvitationsService.myPendingNotification(userId);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
         message: 'Pending notifications fetched successfully!',
+        data: result
+    });
+});
+
+const getNotification = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, 'User not authenticated');
+    }
+    const result = await InvitationsService.getNotification(userId);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'My Notifications fetched successfully!',
         data: result
     });
 });
@@ -80,6 +96,7 @@ const acceptDeclineInvitation = catchAsync(
 
 export const InvitationsController = {
     sendInviteUser,
-    notification,
+    myPendingNotification,
+    getNotification,
     acceptDeclineInvitation
 };

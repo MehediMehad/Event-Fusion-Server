@@ -14,8 +14,7 @@ import ApiError from '../../errors/APIError';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { IPaginationOptions } from '../../interface/pagination';
 import {
-    IEventFilterRequest,
-    ToggleHeroSectionInput
+    IEventFilterRequest
 } from './events.interface';
 import { joinTypeEnum } from '../Participation/participation.constents';
 import { isDateInFuture } from '../../utils/dateHelpers';
@@ -84,7 +83,7 @@ const getAllUpcomingEvent = async () => {
         where: { heroSection: true },
         orderBy: { updatedAt: 'asc' },
         include: { organizer: true }
-    });
+    });    
 
     const filteredEvents = upcomingEvents
         .filter(({ date_time }) => isDateInFuture(date_time, now))

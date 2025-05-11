@@ -104,7 +104,40 @@ const getReview = async (eventId: string) => {
     };
 };
 
+const getMyReview = async (userId: string) => {
+    const reviews = await prisma.review.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        event: {
+          select: {
+            title: true,
+            location: true,
+            date_time: true,
+            coverPhoto: true,
+            is_paid: true,
+            is_public: true,
+            description: true
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            email: true, 
+          },
+        },
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+  
+    return reviews;
+  };
+
 export const ReviewsService = {
     sendReview,
-    getReview
+    getReview, 
+    getMyReview
 };
