@@ -1,4 +1,4 @@
-import { Gender, UserStatus } from '@prisma/client';
+import { Gender, UserRole, UserStatus } from '@prisma/client';
 import { z } from 'zod';
 
 const registration = z.object({
@@ -19,6 +19,19 @@ const registration = z.object({
     profilePhoto: z.string().optional()
 });
 
+const updateProfile = z.object({
+      name: z.string().optional(),
+      email: z.string().email({ message: 'Provide a valid email' }).optional(),
+      contactNumber: z
+        .string()
+        .regex(/^\d+$/, { message: 'Contact number must be numeric' })
+        .min(10, { message: 'Contact number must be at least 10 digits' })
+        .max(15, { message: 'Contact number must be at most 15 digits' })
+        .optional(),
+      profilePhoto: z.string().optional(),
+      gender: z.nativeEnum(Gender).optional()
+    })
+
 const updateStatus = z.object({
     body: z.object({
         status: z.nativeEnum(UserStatus).refine(
@@ -34,5 +47,6 @@ const updateStatus = z.object({
 
 export const UserValidation = {
     registration,
-    updateStatus
+    updateStatus,
+    updateProfile
 };

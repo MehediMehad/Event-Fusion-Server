@@ -24,6 +24,17 @@ router.post(
         return UserController.registrationNewUser(req, res, next);
     }
 );
+router.put(
+    '/update-profile',
+    fileUploader.upload.single('file'),
+    auth("ADMIN", "USER"),
+    (req: Request, res: Response, next: NextFunction) => {
+        req.body = UserValidation.updateProfile.parse(
+            JSON.parse(req.body.data)
+        );
+        return UserController.updateUserProfile(req, res, next);
+    }
+);
 
 router.patch(
     '/:id/status',
@@ -31,5 +42,6 @@ router.patch(
     validateRequest(UserValidation.updateStatus),
     UserController.changeProfileStatus
 );
+router.get('/me', auth('ADMIN', 'USER'), UserController.getMyInfo);
 
 export const UserRoutes = router;

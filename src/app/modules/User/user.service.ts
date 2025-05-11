@@ -19,12 +19,13 @@ const registrationNewUser = async (req: Request) => {
         const fileUploadToCloudinary =
             await fileUploader.uploadToCloudinary(file);
 
-        req.body.user.profilePhoto = fileUploadToCloudinary?.secure_url;
+        req.body.profilePhoto = fileUploadToCloudinary?.secure_url;
     }
 
     const hashPassword: string = await bcrypt.hash(req.body.password, 12);
     const userData = {
         email: req.body.email,
+        profilePhoto: req.body.profilePhoto,
         name: req.body.name,
         contactNumber: req.body.contactNumber,
         password: hashPassword,
@@ -136,6 +137,38 @@ const getAllFromDB = async (params: any, options: IPaginationOptions) => {
     };
 };
 
+const updateUserProfile = async (userId: string, req: Request) => {
+    const file = req.file as IFile;
+  
+    const oldData = await prisma.user.findUniqueOrThrow({
+      where: { id: userId }
+    });
+  
+    let profilePhoto = oldData.profilePhoto;
+  
+    if (file) {
+      const uploaded = await fileUploader.uploadToCloudinary(file);
+      if (uploaded?.secure_url) {
+        profilePhoto = uploaded.secure_url;
+      }
+    }
+  
+    const userData: any = { profilePhoto };
+  
+    if (req.body.name) userData.name = req.body.name;
+    if (req.body.email) userData.email = req.body.email;
+    if (req.body.contactNumber) userData.contactNumber = req.body.contactNumber;
+    if (req.body.gender) userData.gender = req.body.gender;
+  
+    const result = await prisma.user.update({
+      where: { id: userId },
+      data: userData
+    });
+  
+    return result;
+  };
+  
+
 const changeProfileStatus = async (id: string, status: UserRole) => {
     const userData = await prisma.user.findUniqueOrThrow({
         where: {
@@ -151,6 +184,30 @@ const changeProfileStatus = async (id: string, status: UserRole) => {
     });
 
     return updateUserStatus;
+};
+
+const getMyInfo = async (userId: string) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            profilePhoto: true,
+            contactNumber: true,
+            gender: true,
+            role: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true
+        }
+    });
+
+    if (!user) {
+        throw new Error('User not found!');
+    }
+
+    return user;
 };
 
 const getNonParticipants = async (eventId: string) => {
@@ -223,5 +280,7 @@ export const UserService = {
     registrationNewUser,
     getAllFromDB,
     changeProfileStatus,
-    getNonParticipants
+    getNonParticipants,
+    updateUserProfile,
+    getMyInfo
 };
