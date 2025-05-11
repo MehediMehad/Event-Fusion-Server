@@ -65,7 +65,7 @@ const getNotification = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(voi
 // invitation.controller.ts
 const acceptDeclineInvitation = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const { status, invitationId } = req.body; // 'ACCEPTED' or 'REJECTED'
+    const { status, invitationId } = req.body; // 'ACCEPTED' or 'REJECTED'  
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
     if (!userId) {
         throw new APIError_1.default(http_status_1.default.UNAUTHORIZED, 'User not authenticated');

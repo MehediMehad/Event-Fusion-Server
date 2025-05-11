@@ -68,25 +68,25 @@ model Participation {
 
   // Relation
   user    User     @relation(fields: [userId], references: [id])
-  payment Payment? @relation(fields: [paymentId], references: [id])
   event   Events   @relation(fields: [eventId], references: [id])
+  payment Payment? // ✅ No relation definition here
 
   @@unique([userId, eventId])
   @@map("participations")
 }
 
 model Payment {
-  id               String        @id @default(uuid())
-  participation_id String        @unique
-  transactionId    String        @unique
-  amount           Float
-  payment_status   PaymentStatus
+  id                 String        @id @default(uuid())
+  participation_id   String        @unique
+  transactionId      String        @unique
+  amount             Float
+  payment_status     PaymentStatus
+  paymentGatewayData Json
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relation
-  participation Participation[]
+  // ✅ Only define relation here
+  participation Participation @relation(fields: [participation_id], references: [id])
 
   @@map("payments")
 }

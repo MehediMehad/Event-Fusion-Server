@@ -231,16 +231,16 @@ const getMyDashboardInfo = (userId) => __awaiter(void 0, void 0, void 0, functio
         _sum: {
             amount: true
         },
-        where: {
-            participation: {
-                some: {
-                    event: {
-                        organizerId: userId
-                    }
-                }
-            },
-            payment_status: 'PAID'
-        }
+        // where: {
+        //     participation: {
+        //         some: {
+        //             event: {
+        //                 organizerId: userId
+        //             }
+        //         }
+        //     },
+        //     payment_status: 'PAID'
+        // }
     });
     return {
         user,
@@ -249,7 +249,7 @@ const getMyDashboardInfo = (userId) => __awaiter(void 0, void 0, void 0, functio
             totalParticipants,
             pendingInvitations,
             totalReviews,
-            totalEarnings: totalEarnings._sum.amount || 0
+            // totalEarnings: totalEarnings._sum.amount || 0 // TODO
         }
     };
 });

@@ -25,5 +25,14 @@ export default {
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
         api_key: process.env.CLOUDINARY_API_KEY,
         api_secret: process.env.CLOUDINARY_API_SECRET
+    },
+    ssl: {
+        storeId: process.env.STORE_ID,
+        storePass: process.env.STORE_PASS,
+        sslPaymentApi: process.env.SSL_PAYMENT_API,
+        sslValidationApi: process.env.SSL_VALIDATION_API,
+        successUrl: process.env.SUCCESS_URL,
+        cancelUrl: process.env.CANCEL_URL,
+        failUrl: process.env.FAIL_URL
     }
 };

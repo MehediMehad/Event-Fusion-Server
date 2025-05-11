@@ -209,21 +209,21 @@ const getMyDashboardInfo = async (userId: string) => {
     });
 
     // Total Earnings from paid events
-    const totalEarnings = await prisma.payment.aggregate({
-        _sum: {
-            amount: true
-        },
-        where: {
-            participation: {
-                some: {
-                    event: {
-                        organizerId: userId
-                    }
-                }
-            },
-            payment_status: 'PAID'
-        }
-    });
+    // const totalEarnings = await prisma.payment.aggregate({
+    //     _sum: {
+    //         amount: true
+    //     },
+    //     where: {
+    //         participation: {
+    //             some: {
+    //                 event: {
+    //                     organizerId: userId
+    //                 }
+    //             }
+    //         },
+    //         payment_status: 'PAID'
+    //     }
+    // });
 
     return {
         user,
@@ -232,7 +232,7 @@ const getMyDashboardInfo = async (userId: string) => {
             totalParticipants,
             pendingInvitations,
             totalReviews,
-            totalEarnings: totalEarnings._sum.amount || 0
+            // totalEarnings: totalEarnings._sum.amount || 0 // TODO
         }
     };
 };
