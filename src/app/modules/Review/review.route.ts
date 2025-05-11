@@ -9,13 +9,30 @@ const router = express.Router();
 
 router.post(
     '/',
-    auth(UserRole.USER),
+    auth('USER', 'ADMIN'),
     validateRequest(ReviewsValidation.createReviewSchema),
     ReviewsController.sendReview
 );
 
-router.get('/get-my-review', auth(UserRole.USER), ReviewsController.getMyReview);
-router.get('/single/:eventId', auth(UserRole.USER), ReviewsController.getReview);
-router.delete('/:reviewId', auth(UserRole.USER), ReviewsController.deleteReview);
+router.get(
+    '/get-my-review',
+    auth('USER', 'ADMIN'),
+    ReviewsController.getMyReview
+);
+router.get(
+    '/single/:eventId',
+    auth('USER', 'ADMIN'),
+    ReviewsController.getReview
+);
+router.delete(
+    '/:reviewId',
+    auth('USER', 'ADMIN'),
+    ReviewsController.deleteReview
+);
+router.patch(
+    '/',
+    auth('USER', 'ADMIN'),
+    ReviewsController.updateReview
+);
 
 export const ReviewsRoutes = router;

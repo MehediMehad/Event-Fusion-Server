@@ -139,31 +139,74 @@ const getMyReview = async (userId: string) => {
 const deleteReview = async (userId: string, reviewId: string) => {
     // Check if the review exists and belongs to the user
     const review = await prisma.review.findFirst({
-      where: {
-        id: reviewId,
-        userId,
-      },
+        where: {
+            id: reviewId,
+            userId
+        }
     });
-  
+
     if (!review) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Review not found or you are not authorized to delete this review');
+        throw new ApiError(
+            httpStatus.NOT_FOUND,
+            'Review not found or you are not authorized to delete this review'
+        );
     }
-  
+
     // Delete the review
     await prisma.review.delete({
-      where: {
-        id: reviewId,
-      },
+        where: {
+            id: reviewId
+        }
     });
-  
+
     return {
-      message: 'Review deleted successfully',
+        message: 'Review deleted successfully'
     };
-  };
+};
+
+export interface UpdateReviewData {
+    rating?: string;
+    comment?: string;
+}
+const updateReview = async (
+    reviewId: string,
+    userId: string,
+    data: UpdateReviewData
+) => {
+    // Check if review exists and belongs to user
+    const existingReview = await prisma.review.findFirst({
+        where: {
+            id: reviewId,
+            userId
+        }
+    });
+
+    if (!existingReview) {
+        throw new ApiError(
+            httpStatus.NOT_FOUND,
+            'Review not found or unauthorized'
+        );
+    }
+
+    // Update review
+    const updatedReview = await prisma.review.update({
+        where: {
+            id: reviewId
+        },
+        include: {
+            event: true,
+            user: true
+        },
+        data
+    });
+
+    return updatedReview;
+};
 
 export const ReviewsService = {
     sendReview,
     getReview,
     getMyReview,
-    deleteReview
+    deleteReview,
+    updateReview
 };
