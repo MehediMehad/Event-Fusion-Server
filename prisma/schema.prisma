@@ -95,6 +95,7 @@ model Invitation {
   id          String           @id @default(uuid())
   senderId    String
   receiverId  String?
+  referredId  String?
   event_id    String
   status      InvitationStatus @default(PENDING)
   invited_at  DateTime         @default(now())
@@ -110,7 +111,7 @@ model Invitation {
 
 model Review {
   id         String   @id @default(uuid())
-  userId     String 
+  userId     String
   eventId    String
   rating     String
   comment    String
@@ -123,7 +124,6 @@ model Review {
   @@unique([userId, eventId], name: "userId_eventId") // explicitly name it
   @@map("Reviews")
 }
-
 
 enum PaymentStatus {
   PAID

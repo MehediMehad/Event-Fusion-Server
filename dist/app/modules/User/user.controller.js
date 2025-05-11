@@ -50,6 +50,16 @@ const changeProfileStatus = (0, catchAsync_1.catchAsync)((req, res) => __awaiter
         data: result
     });
 }));
+const updateUserProfile = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.userId;
+    const result = yield user_service_1.UserService.updateUserProfile(userId, req);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Profile updated successfully!',
+        data: result
+    });
+}));
 const getNonParticipants = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { eventId } = req.params;
     // const userId = req.user.userId;
@@ -61,9 +71,32 @@ const getNonParticipants = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(
         data: result
     });
 }));
+const getMyInfo = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const result = yield user_service_1.UserService.getMyInfo(user.userId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'User info retrieved successfully!',
+        data: result
+    });
+}));
+const getMyDashboardInfo = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const result = yield user_service_1.UserService.getMyDashboardInfo(user.userId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Dashboard data retrieved successfully!',
+        data: result
+    });
+}));
 exports.UserController = {
+    getMyDashboardInfo,
     registrationNewUser,
     getAllFromDB,
     changeProfileStatus,
-    getNonParticipants
+    getNonParticipants,
+    updateUserProfile,
+    getMyInfo
 };

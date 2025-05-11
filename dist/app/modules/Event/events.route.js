@@ -20,6 +20,7 @@ router.post('/', (0, auth_1.default)(user_constant_1.USER_ROLE.USER), fileUpload
     req.body = events_validation_1.EventsValidation.createEvents.parse(JSON.parse(req.body.data));
     return events_controller_1.EventsController.createEvent(req, res, next);
 });
+router.put('/add-to-hero-section', (0, auth_1.default)("ADMIN", "USER"), events_controller_1.EventsController.addHeroSection);
 router.put('/:id', (0, auth_1.default)(user_constant_1.USER_ROLE.USER), fileUploader_1.fileUploader.upload.single('file'), (req, res, next) => {
     req.body = events_validation_1.EventsValidation.updateEvent.parse(JSON.parse(req.body.data));
     return events_controller_1.EventsController.updateIntoDB(req, res, next);

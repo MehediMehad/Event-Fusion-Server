@@ -84,6 +84,16 @@ const updateIntoDB = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0
         data: result
     });
 }));
+const addHeroSection = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { eventId } = req.body;
+    const result = yield events_service_1.EventService.addHeroSection(eventId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Event data updated!',
+        data: result
+    });
+}));
 const joinEvent = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield events_service_1.EventService.joinEvent(req);
     (0, sendResponse_1.default)(res, {
@@ -109,6 +119,7 @@ exports.EventsController = {
     getAllUpcomingEvent,
     getByIdFromDB,
     updateIntoDB,
+    addHeroSection,
     getMyEventsFromDB,
     getAllEventsDetailsPage,
     joinEvent,

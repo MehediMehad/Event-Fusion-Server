@@ -137,55 +137,6 @@ const getAllFromDB = async (params: any, options: IPaginationOptions) => {
     };
 };
 
-const updateUserProfile = async (userId: string, req: Request) => {
-    const file = req.file as IFile;
-  
-    const oldData = await prisma.user.findUniqueOrThrow({
-      where: { id: userId }
-    });
-  
-    let profilePhoto = oldData.profilePhoto;
-  
-    if (file) {
-      const uploaded = await fileUploader.uploadToCloudinary(file);
-      if (uploaded?.secure_url) {
-        profilePhoto = uploaded.secure_url;
-      }
-    }
-  
-    const userData: any = { profilePhoto };
-  
-    if (req.body.name) userData.name = req.body.name;
-    if (req.body.email) userData.email = req.body.email;
-    if (req.body.contactNumber) userData.contactNumber = req.body.contactNumber;
-    if (req.body.gender) userData.gender = req.body.gender;
-  
-    const result = await prisma.user.update({
-      where: { id: userId },
-      data: userData
-    });
-  
-    return result;
-  };
-  
-
-const changeProfileStatus = async (id: string, status: UserRole) => {
-    const userData = await prisma.user.findUniqueOrThrow({
-        where: {
-            id
-        }
-    });
-
-    const updateUserStatus = await prisma.user.update({
-        where: {
-            id
-        },
-        data: status
-    });
-
-    return updateUserStatus;
-};
-
 const getMyInfo = async (userId: string) => {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -208,6 +159,130 @@ const getMyInfo = async (userId: string) => {
     }
 
     return user;
+};
+
+const getMyDashboardInfo = async (userId: string) => {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId,
+            isDeleted: false
+        }
+    });
+
+    if (!user) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    }
+
+    // Total Events Created by User
+    const totalEvents = await prisma.events.count({
+        where: {
+            organizerId: userId,
+            isDeleted: false
+        }
+    });
+
+    // Total Participants in all events created by the user
+    const totalParticipants = await prisma.participation.count({
+        where: {
+            event: {
+                organizerId: userId
+            },
+            status: 'APPROVED'
+        }
+    });
+
+    // Pending Invitations Received
+    const pendingInvitations = await prisma.invitation.count({
+        where: {
+            receiverId: userId,
+            status: 'PENDING'
+        }
+    });
+
+    // Total Reviews received on user's events
+    const totalReviews = await prisma.review.count({
+        where: {
+            event: {
+                organizerId: userId
+            }
+        }
+    });
+
+    // Total Earnings from paid events
+    const totalEarnings = await prisma.payment.aggregate({
+        _sum: {
+            amount: true
+        },
+        where: {
+            participation: {
+                some: {
+                    event: {
+                        organizerId: userId
+                    }
+                }
+            },
+            payment_status: 'PAID'
+        }
+    });
+
+    return {
+        user,
+        dashboardSummary: {
+            totalEvents,
+            totalParticipants,
+            pendingInvitations,
+            totalReviews,
+            totalEarnings: totalEarnings._sum.amount || 0
+        }
+    };
+};
+
+const updateUserProfile = async (userId: string, req: Request) => {
+    const file = req.file as IFile;
+
+    const oldData = await prisma.user.findUniqueOrThrow({
+        where: { id: userId }
+    });
+
+    let profilePhoto = oldData.profilePhoto;
+
+    if (file) {
+        const uploaded = await fileUploader.uploadToCloudinary(file);
+        if (uploaded?.secure_url) {
+            profilePhoto = uploaded.secure_url;
+        }
+    }
+
+    const userData: any = { profilePhoto };
+
+    if (req.body.name) userData.name = req.body.name;
+    if (req.body.email) userData.email = req.body.email;
+    if (req.body.contactNumber) userData.contactNumber = req.body.contactNumber;
+    if (req.body.gender) userData.gender = req.body.gender;
+
+    const result = await prisma.user.update({
+        where: { id: userId },
+        data: userData
+    });
+
+    return result;
+};
+
+const changeProfileStatus = async (id: string, status: UserRole) => {
+    const userData = await prisma.user.findUniqueOrThrow({
+        where: {
+            id
+        }
+    });
+
+    const updateUserStatus = await prisma.user.update({
+        where: {
+            id
+        },
+        data: status
+    });
+
+    return updateUserStatus;
 };
 
 const getNonParticipants = async (eventId: string) => {
@@ -282,5 +357,6 @@ export const UserService = {
     changeProfileStatus,
     getNonParticipants,
     updateUserProfile,
-    getMyInfo
+    getMyInfo,
+    getMyDashboardInfo
 };

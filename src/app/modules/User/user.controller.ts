@@ -45,7 +45,7 @@ const changeProfileStatus = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateUserProfile = catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user.userId; 
+    const userId = req.user.userId;
 
     const result = await UserService.updateUserProfile(userId, req);
 
@@ -53,10 +53,9 @@ const updateUserProfile = catchAsync(async (req: Request, res: Response) => {
         statusCode: httpStatus.OK,
         success: true,
         message: 'Profile updated successfully!',
-        data: result,
+        data: result
     });
 });
-
 
 const getNonParticipants = catchAsync(async (req: Request, res: Response) => {
     const { eventId } = req.params;
@@ -72,22 +71,32 @@ const getNonParticipants = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getMyInfo = catchAsync(async (req: Request, res: Response) => {
-    const user = req.user; 
-  
+    const user = req.user;
+
     const result = await UserService.getMyInfo(user.userId);
-  
+
     sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: 'User info retrieved successfully!',
-      data: result
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'User info retrieved successfully!',
+        data: result
     });
-  });
-  
+});
 
+const getMyDashboardInfo = catchAsync(async (req: Request, res: Response) => {
+    const user = req.user;
+    const result = await UserService.getMyDashboardInfo(user.userId);
 
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Dashboard data retrieved successfully!',
+        data: result
+    });
+});
 
 export const UserController = {
+    getMyDashboardInfo,
     registrationNewUser,
     getAllFromDB,
     changeProfileStatus,

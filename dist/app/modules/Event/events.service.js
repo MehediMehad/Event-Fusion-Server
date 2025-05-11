@@ -20,6 +20,7 @@ const http_status_1 = __importDefault(require("http-status"));
 const APIError_1 = __importDefault(require("../../errors/APIError"));
 const paginationHelper_1 = require("../../../helpers/paginationHelper");
 const participation_constents_1 = require("../Participation/participation.constents");
+const dateHelpers_1 = require("../../utils/dateHelpers");
 const createEvent = (req) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const file = req.file;
@@ -44,25 +45,42 @@ const createEvent = (req) => __awaiter(void 0, void 0, void 0, function* () {
     });
     return result;
 });
+const addHeroSection = (eventId) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.$transaction((txc) => __awaiter(void 0, void 0, void 0, function* () {
+        // Step 1: Turn off heroSection for all events
+        yield txc.events.updateMany({
+            where: {
+                heroSection: true
+            },
+            data: {
+                heroSection: false
+            }
+        });
+        // Update only the target event's heroSection to true
+        const updatedEvent = yield txc.events.update({
+            where: { id: eventId },
+            data: { heroSection: true }
+        });
+        return updatedEvent;
+    }));
+    return result;
+});
 const getAllUpcomingEvent = () => __awaiter(void 0, void 0, void 0, function* () {
     const now = new Date();
-    const events = yield prisma_1.default.events.findMany({
-        where: {
-            isDeleted: false,
-            status: 'UPCOMING'
-        },
-        orderBy: {
-            date_time: 'asc' // string sort
-        },
-        include: {
-            organizer: true
-        }
+    const upcomingEvents = yield prisma_1.default.events.findMany({
+        where: { is_public: true, status: 'UPCOMING' },
+        orderBy: { date_time: 'asc' },
+        include: { organizer: true }
     });
-    const filteredEvents = events.filter((event) => {
-        const eventDate = new Date(event.date_time.replace(' ', 'T')); // 📝 string -> Date
-        return eventDate >= now;
+    const heroEvent = yield prisma_1.default.events.findFirst({
+        where: { heroSection: true },
+        orderBy: { updatedAt: 'asc' },
+        include: { organizer: true }
     });
-    return filteredEvents;
+    const filteredEvents = upcomingEvents
+        .filter(({ date_time }) => (0, dateHelpers_1.isDateInFuture)(date_time, now))
+        .slice(0, 9);
+    return { filteredEvents, heroEvent };
 });
 const getByIdFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const event = yield prisma_1.default.events.findUnique({
@@ -416,6 +434,7 @@ exports.EventService = {
     getAllUpcomingEvent,
     getByIdFromDB,
     updateIntoDB,
+    addHeroSection,
     getMyEventsFromDB,
     getAllEventsDetailsPage,
     joinEvent,

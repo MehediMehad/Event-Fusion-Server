@@ -43,5 +43,6 @@ router.patch(
     UserController.changeProfileStatus
 );
 router.get('/me', auth('ADMIN', 'USER'), UserController.getMyInfo);
+router.get('/get-my-dashboard-info', auth('ADMIN', 'USER'), UserController.getMyDashboardInfo);
 
 export const UserRoutes = router;

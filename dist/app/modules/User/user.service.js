@@ -71,11 +71,12 @@ const registrationNewUser = (req) => __awaiter(void 0, void 0, void 0, function*
     const file = req.file;
     if (file) {
         const fileUploadToCloudinary = yield fileUploader_1.fileUploader.uploadToCloudinary(file);
-        req.body.user.profilePhoto = fileUploadToCloudinary === null || fileUploadToCloudinary === void 0 ? void 0 : fileUploadToCloudinary.secure_url;
+        req.body.profilePhoto = fileUploadToCloudinary === null || fileUploadToCloudinary === void 0 ? void 0 : fileUploadToCloudinary.secure_url;
     }
     const hashPassword = yield bcrypt.hash(req.body.password, 12);
     const userData = {
         email: req.body.email,
+        profilePhoto: req.body.profilePhoto,
         name: req.body.name,
         contactNumber: req.body.contactNumber,
         password: hashPassword,
@@ -163,6 +164,122 @@ const getAllFromDB = (params, options) => __awaiter(void 0, void 0, void 0, func
         data: result
     };
 });
+const getMyInfo = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield prisma_1.default.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            profilePhoto: true,
+            contactNumber: true,
+            gender: true,
+            role: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true
+        }
+    });
+    if (!user) {
+        throw new Error('User not found!');
+    }
+    return user;
+});
+const getMyDashboardInfo = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield prisma_1.default.user.findUnique({
+        where: {
+            id: userId,
+            isDeleted: false
+        }
+    });
+    if (!user) {
+        throw new APIError_1.default(http_status_1.default.NOT_FOUND, 'User not found');
+    }
+    // Total Events Created by User
+    const totalEvents = yield prisma_1.default.events.count({
+        where: {
+            organizerId: userId,
+            isDeleted: false
+        }
+    });
+    // Total Participants in all events created by the user
+    const totalParticipants = yield prisma_1.default.participation.count({
+        where: {
+            event: {
+                organizerId: userId
+            },
+            status: 'APPROVED'
+        }
+    });
+    // Pending Invitations Received
+    const pendingInvitations = yield prisma_1.default.invitation.count({
+        where: {
+            receiverId: userId,
+            status: 'PENDING'
+        }
+    });
+    // Total Reviews received on user's events
+    const totalReviews = yield prisma_1.default.review.count({
+        where: {
+            event: {
+                organizerId: userId
+            }
+        }
+    });
+    // Total Earnings from paid events
+    const totalEarnings = yield prisma_1.default.payment.aggregate({
+        _sum: {
+            amount: true
+        },
+        where: {
+            participation: {
+                some: {
+                    event: {
+                        organizerId: userId
+                    }
+                }
+            },
+            payment_status: 'PAID'
+        }
+    });
+    return {
+        user,
+        dashboardSummary: {
+            totalEvents,
+            totalParticipants,
+            pendingInvitations,
+            totalReviews,
+            totalEarnings: totalEarnings._sum.amount || 0
+        }
+    };
+});
+const updateUserProfile = (userId, req) => __awaiter(void 0, void 0, void 0, function* () {
+    const file = req.file;
+    const oldData = yield prisma_1.default.user.findUniqueOrThrow({
+        where: { id: userId }
+    });
+    let profilePhoto = oldData.profilePhoto;
+    if (file) {
+        const uploaded = yield fileUploader_1.fileUploader.uploadToCloudinary(file);
+        if (uploaded === null || uploaded === void 0 ? void 0 : uploaded.secure_url) {
+            profilePhoto = uploaded.secure_url;
+        }
+    }
+    const userData = { profilePhoto };
+    if (req.body.name)
+        userData.name = req.body.name;
+    if (req.body.email)
+        userData.email = req.body.email;
+    if (req.body.contactNumber)
+        userData.contactNumber = req.body.contactNumber;
+    if (req.body.gender)
+        userData.gender = req.body.gender;
+    const result = yield prisma_1.default.user.update({
+        where: { id: userId },
+        data: userData
+    });
+    return result;
+});
 const changeProfileStatus = (id, status) => __awaiter(void 0, void 0, void 0, function* () {
     const userData = yield prisma_1.default.user.findUniqueOrThrow({
         where: {
@@ -242,5 +359,8 @@ exports.UserService = {
     registrationNewUser,
     getAllFromDB,
     changeProfileStatus,
-    getNonParticipants
+    getNonParticipants,
+    updateUserProfile,
+    getMyInfo,
+    getMyDashboardInfo
 };

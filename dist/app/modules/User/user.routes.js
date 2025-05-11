@@ -20,5 +20,11 @@ router.post('/registration', fileUploader_1.fileUploader.upload.single('file'), 
     req.body = user_validation_1.UserValidation.registration.parse(JSON.parse(req.body.data));
     return user_controller_1.UserController.registrationNewUser(req, res, next);
 });
+router.put('/update-profile', fileUploader_1.fileUploader.upload.single('file'), (0, auth_1.default)("ADMIN", "USER"), (req, res, next) => {
+    req.body = user_validation_1.UserValidation.updateProfile.parse(JSON.parse(req.body.data));
+    return user_controller_1.UserController.updateUserProfile(req, res, next);
+});
 router.patch('/:id/status', (0, auth_1.default)(user_constant_1.USER_ROLE.ADMIN), (0, validateRequest_1.validateRequest)(user_validation_1.UserValidation.updateStatus), user_controller_1.UserController.changeProfileStatus);
+router.get('/me', (0, auth_1.default)('ADMIN', 'USER'), user_controller_1.UserController.getMyInfo);
+router.get('/get-my-dashboard-info', (0, auth_1.default)('ADMIN', 'USER'), user_controller_1.UserController.getMyDashboardInfo);
 exports.UserRoutes = router;

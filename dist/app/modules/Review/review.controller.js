@@ -36,7 +36,50 @@ const getReview = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, v
         data: result
     });
 }));
+const getMyReview = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+    const result = yield review_service_1.ReviewsService.getMyReview(userId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'My Review get successfully!',
+        data: result
+    });
+}));
+const deleteReview = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+    const { reviewId } = req.params;
+    const result = yield review_service_1.ReviewsService.deleteReview(userId, reviewId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: result.message,
+        data: null
+    });
+}));
+// src/controllers/reviewController.ts
+const updateReview = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+    const body = req.body;
+    const data = {
+        rating: body === null || body === void 0 ? void 0 : body.rating,
+        comment: body === null || body === void 0 ? void 0 : body.comment
+    };
+    const result = yield review_service_1.ReviewsService.updateReview(req.body.reviewId, userId, data);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Review updated successfully',
+        data: result
+    });
+}));
 exports.ReviewsController = {
     sendReview,
-    getReview
+    getReview,
+    getMyReview,
+    deleteReview,
+    updateReview
 };

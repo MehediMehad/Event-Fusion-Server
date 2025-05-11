@@ -20,6 +20,18 @@ const registration = zod_1.z.object({
     }),
     profilePhoto: zod_1.z.string().optional()
 });
+const updateProfile = zod_1.z.object({
+    name: zod_1.z.string().optional(),
+    email: zod_1.z.string().email({ message: 'Provide a valid email' }).optional(),
+    contactNumber: zod_1.z
+        .string()
+        .regex(/^\d+$/, { message: 'Contact number must be numeric' })
+        .min(10, { message: 'Contact number must be at least 10 digits' })
+        .max(15, { message: 'Contact number must be at most 15 digits' })
+        .optional(),
+    profilePhoto: zod_1.z.string().optional(),
+    gender: zod_1.z.nativeEnum(client_1.Gender).optional()
+});
 const updateStatus = zod_1.z.object({
     body: zod_1.z.object({
         status: zod_1.z.nativeEnum(client_1.UserStatus).refine((val) => Object.values(client_1.UserStatus).includes(val), (val) => ({
@@ -29,5 +41,6 @@ const updateStatus = zod_1.z.object({
 });
 exports.UserValidation = {
     registration,
-    updateStatus
+    updateStatus,
+    updateProfile
 };

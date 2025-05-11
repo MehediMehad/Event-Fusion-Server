@@ -34,17 +34,31 @@ const sendInviteUser = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void
         data: result
     });
 }));
-const notification = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const myPendingNotification = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
     if (!userId) {
         throw new APIError_1.default(http_status_1.default.UNAUTHORIZED, 'User not authenticated');
     }
-    const result = yield invitation_service_1.InvitationsService.notification(userId);
+    const result = yield invitation_service_1.InvitationsService.myPendingNotification(userId);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
         message: 'Pending notifications fetched successfully!',
+        data: result
+    });
+}));
+const getNotification = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+    if (!userId) {
+        throw new APIError_1.default(http_status_1.default.UNAUTHORIZED, 'User not authenticated');
+    }
+    const result = yield invitation_service_1.InvitationsService.getNotification(userId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'My Notifications fetched successfully!',
         data: result
     });
 }));
@@ -69,6 +83,7 @@ const acceptDeclineInvitation = (0, catchAsync_1.catchAsync)((req, res) => __awa
 }));
 exports.InvitationsController = {
     sendInviteUser,
-    notification,
+    myPendingNotification,
+    getNotification,
     acceptDeclineInvitation
 };

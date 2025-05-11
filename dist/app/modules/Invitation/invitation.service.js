@@ -54,7 +54,7 @@ const sendInviteUser = (payload, senderId) => __awaiter(void 0, void 0, void 0, 
     });
     return invitation;
 });
-const notification = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+const myPendingNotification = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const pendingInvitations = yield prisma_1.default.invitation.findMany({
         where: {
             receiverId: userId,
@@ -63,9 +63,27 @@ const notification = (userId) => __awaiter(void 0, void 0, void 0, function* () 
         include: {
             sender: true,
             event: true
+        },
+        orderBy: {
+            invited_at: 'desc' // Newest first
         }
     });
     return pendingInvitations;
+});
+const getNotification = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const getNotification = yield prisma_1.default.invitation.findMany({
+        where: {
+            receiverId: userId
+        },
+        include: {
+            sender: true,
+            event: true
+        },
+        orderBy: {
+            invited_at: 'desc' // Newest first
+        }
+    });
+    return getNotification;
 });
 const acceptDeclineInvitation = (invitationId, userId, status) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if the invitation exists and receiver is this user
@@ -97,6 +115,7 @@ const acceptDeclineInvitation = (invitationId, userId, status) => __awaiter(void
 });
 exports.InvitationsService = {
     sendInviteUser,
-    notification,
+    myPendingNotification,
+    getNotification,
     acceptDeclineInvitation
 };
