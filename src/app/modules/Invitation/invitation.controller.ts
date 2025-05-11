@@ -62,7 +62,7 @@ const getNotification = catchAsync(async (req: Request, res: Response) => {
 
 const acceptDeclineInvitation = catchAsync(
     async (req: Request, res: Response) => {
-        const { status, invitationId } = req.body; // 'ACCEPTED' or 'REJECTED'
+        const { status, invitationId } = req.body; // 'ACCEPTED' or 'REJECTED'  
         const userId = req.user?.userId;
 
         if (!userId) {
