@@ -16,5 +16,6 @@ router.post(
 
 router.get('/get-my-review', auth(UserRole.USER), ReviewsController.getMyReview);
 router.get('/single/:eventId', auth(UserRole.USER), ReviewsController.getReview);
+router.delete('/:reviewId', auth(UserRole.USER), ReviewsController.deleteReview);
 
 export const ReviewsRoutes = router;

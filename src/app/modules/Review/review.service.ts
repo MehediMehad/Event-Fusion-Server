@@ -106,38 +106,64 @@ const getReview = async (eventId: string) => {
 
 const getMyReview = async (userId: string) => {
     const reviews = await prisma.review.findMany({
+        where: {
+            userId
+        },
+        include: {
+            event: {
+                select: {
+                    title: true,
+                    location: true,
+                    date_time: true,
+                    coverPhoto: true,
+                    is_paid: true,
+                    is_public: true,
+                    description: true
+                }
+            },
+            user: {
+                select: {
+                    name: true,
+                    email: true
+                }
+            }
+        },
+        orderBy: {
+            created_at: 'desc'
+        }
+    });
+
+    return reviews;
+};
+
+const deleteReview = async (userId: string, reviewId: string) => {
+    // Check if the review exists and belongs to the user
+    const review = await prisma.review.findFirst({
       where: {
+        id: reviewId,
         userId,
-      },
-      include: {
-        event: {
-          select: {
-            title: true,
-            location: true,
-            date_time: true,
-            coverPhoto: true,
-            is_paid: true,
-            is_public: true,
-            description: true
-          },
-        },
-        user: {
-          select: {
-            name: true,
-            email: true, 
-          },
-        },
-      },
-      orderBy: {
-        created_at: 'desc',
       },
     });
   
-    return reviews;
+    if (!review) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Review not found or you are not authorized to delete this review');
+    }
+  
+    // Delete the review
+    await prisma.review.delete({
+      where: {
+        id: reviewId,
+      },
+    });
+  
+    return {
+      message: 'Review deleted successfully',
+    };
   };
 
 export const ReviewsService = {
     sendReview,
-    getReview, 
-    getMyReview
+    getReview,
+    getMyReview,
+    deleteReview
 };
