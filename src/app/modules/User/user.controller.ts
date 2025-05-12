@@ -95,6 +95,17 @@ const getMyDashboardInfo = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getAdminDashboardInfo = catchAsync(async (req: Request, res: Response) => {
+    const result = await UserService.getAdminDashboardInfo();
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Dashboard data retrieved successfully!',
+        data: result
+    });
+});
+
 export const UserController = {
     getMyDashboardInfo,
     registrationNewUser,
@@ -102,5 +113,6 @@ export const UserController = {
     changeProfileStatus,
     getNonParticipants,
     updateUserProfile,
-    getMyInfo
+    getMyInfo,
+    getAdminDashboardInfo
 };

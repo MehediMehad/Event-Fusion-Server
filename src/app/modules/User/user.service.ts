@@ -1,5 +1,5 @@
 import prisma from '../../../shared/prisma';
-import { Prisma, User, UserRole, UserStatus } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { IFile } from '../../interface/file';
@@ -63,7 +63,6 @@ const registrationNewUser = async (req: Request) => {
 };
 
 const getAllFromDB = async (params: any, options: IPaginationOptions) => {
-    console.log(25, options);
     const { page, limit, skip, sortBy, sortOrder } =
         paginationHelper.calculatePagination(options);
     const { searchTerm, ...filterData } = params;
@@ -208,7 +207,7 @@ const getMyDashboardInfo = async (userId: string) => {
         }
     });
 
-    // Total Earnings from paid events
+    // Total Earnings from paid events  // TODO
     // const totalEarnings = await prisma.payment.aggregate({
     //     _sum: {
     //         amount: true
@@ -236,6 +235,63 @@ const getMyDashboardInfo = async (userId: string) => {
         }
     };
 };
+
+const getAdminDashboardInfo = async () => {
+  // Total Events (excluding deleted ones)
+  const totalEvents = await prisma.events.count({
+    where: {
+      isDeleted: false
+    }
+  });
+
+  // Total Public Events
+  const totalPublicEvents = await prisma.events.count({
+    where: {
+      isDeleted: false,
+      is_public: true
+    }
+  });
+
+  // Total Private Events
+  const totalPrivateEvents = await prisma.events.count({
+    where: {
+      isDeleted: false,
+      is_public: false
+    }
+  });
+
+  // Total Approved Participants across all events
+  const totalParticipants = await prisma.participation.count({
+    where: {
+      status: 'APPROVED'
+    }
+  });
+
+  // Total unique Organizers (Users who created at least one event)
+  const totalOrganizers = await prisma.user.count({
+    where: {
+      isDeleted: false,
+      role: 'USER',
+      events: {
+        some: {
+          isDeleted: false
+        }
+      }
+    }
+  });
+
+  return {
+    dashboardSummary: {
+      totalEvents,
+      totalPublicEvents,
+      totalPrivateEvents,
+      totalParticipants,
+      totalOrganizers
+    }
+  };
+};
+
+
 
 const updateUserProfile = async (userId: string, req: Request) => {
     const file = req.file as IFile;
@@ -358,5 +414,6 @@ export const UserService = {
     getNonParticipants,
     updateUserProfile,
     getMyInfo,
-    getMyDashboardInfo
+    getMyDashboardInfo,
+    getAdminDashboardInfo
 };
