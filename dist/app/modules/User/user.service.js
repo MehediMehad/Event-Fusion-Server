@@ -227,21 +227,21 @@ const getMyDashboardInfo = (userId) => __awaiter(void 0, void 0, void 0, functio
         }
     });
     // Total Earnings from paid events
-    const totalEarnings = yield prisma_1.default.payment.aggregate({
-        _sum: {
-            amount: true
-        },
-        // where: {
-        //     participation: {
-        //         some: {
-        //             event: {
-        //                 organizerId: userId
-        //             }
-        //         }
-        //     },
-        //     payment_status: 'PAID'
-        // }
-    });
+    // const totalEarnings = await prisma.payment.aggregate({
+    //     _sum: {
+    //         amount: true
+    //     },
+    //     where: {
+    //         participation: {
+    //             some: {
+    //                 event: {
+    //                     organizerId: userId
+    //                 }
+    //             }
+    //         },
+    //         payment_status: 'PAID'
+    //     }
+    // });
     return {
         user,
         dashboardSummary: {

@@ -10,7 +10,6 @@ const events_route_1 = require("../modules/Event/events.route");
 const invitation_route_1 = require("../modules/Invitation/invitation.route");
 const review_route_1 = require("../modules/Review/review.route");
 const participation_route_1 = require("../modules/Participation/participation.route");
-const payment_routes_1 = require("../modules/Payment/payment.routes");
 const router = express_1.default.Router();
 const moduleRoutes = [
     {
@@ -37,10 +36,6 @@ const moduleRoutes = [
         path: '/participation',
         route: participation_route_1.ParticipationRoutes
     },
-    {
-        path: '/payment',
-        route: payment_routes_1.PaymentRoutes
-    }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 exports.default = router;

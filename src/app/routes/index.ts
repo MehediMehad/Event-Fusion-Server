@@ -5,7 +5,6 @@ import { EventRoutes } from '../modules/Event/events.route';
 import { InvitationsRoutes } from '../modules/Invitation/invitation.route';
 import { ReviewsRoutes } from '../modules/Review/review.route';
 import { ParticipationRoutes } from '../modules/Participation/participation.route';
-import { PaymentRoutes } from '../modules/Payment/payment.routes';
 
 const router = express.Router();
 
@@ -34,10 +33,7 @@ const moduleRoutes = [
         path: '/participation',
         route: ParticipationRoutes
     },
-    {
-        path: '/payment',
-        route: PaymentRoutes
-    }
+
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
