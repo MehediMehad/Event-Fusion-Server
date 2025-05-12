@@ -27,6 +27,7 @@ model User {
   invitationsSent     Invitation[] @relation(name: "invitationsSendedUser")
   invitationsReceived Invitation[] @relation(name: "invitationsReceived")
   review              Review[]
+  stripeCustomerId    String?
 
   @@map("users")
 }
