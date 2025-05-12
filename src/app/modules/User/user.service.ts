@@ -266,6 +266,12 @@ const getAdminDashboardInfo = async () => {
       status: 'APPROVED'
     }
   });
+  // Total users
+  const totalUser = await prisma.user.count({
+    where: {
+      status: 'ACTIVE'
+    }
+  });
 
   // Total unique Organizers (Users who created at least one event)
   const totalOrganizers = await prisma.user.count({
@@ -286,7 +292,8 @@ const getAdminDashboardInfo = async () => {
       totalPublicEvents,
       totalPrivateEvents,
       totalParticipants,
-      totalOrganizers
+      totalOrganizers,
+      totalUser
     }
   };
 };
