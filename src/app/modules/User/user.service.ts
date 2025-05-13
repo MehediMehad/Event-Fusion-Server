@@ -136,6 +136,112 @@ const getAllFromDB = async (params: any, options: IPaginationOptions) => {
     };
 };
 
+const getAllUsersWithStats = async (params: any, options: IPaginationOptions) => {
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.calculatePagination(options);
+
+  const { searchTerm, ...filterData } = params;
+  const andCondition: Prisma.UserWhereInput[] = [];
+
+  if (searchTerm) {
+    andCondition.push({
+      OR: ['name', 'email'].map((field) => ({
+        [field]: {
+          contains: searchTerm,
+          mode: 'insensitive',
+        },
+      })),
+    });
+  }
+
+  if (Object.keys(filterData).length > 0) {
+    andCondition.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: { equals: (filterData as any)[key] },
+      })),
+    });
+  }
+
+  const whereCondition = andCondition.length > 0 ? { AND: andCondition } : {};
+
+  const result = await prisma.user.findMany({
+    where: whereCondition,
+    skip,
+    take: limit,
+    orderBy:
+      sortBy && sortOrder
+        ? { [sortBy]: sortOrder }
+        : { createdAt: 'desc' },
+    select: {
+      id: true,
+      name: true,
+      profilePhoto: true,
+      email: true,
+      status: true,
+      events: {
+        select: {
+          id: true,
+        },
+      },
+      participation: {
+        where: {
+          status: 'APPROVED',
+        },
+        select: {
+          id: true,
+        },
+      },
+      _count: {
+        select: {
+          events: true,
+        },
+      },
+    },
+  });
+
+  const total = await prisma.user.count({ where: whereCondition });
+
+  // Manually count paid events
+  const userIds = result.map(u => u.id);
+  const paidParticipationCounts = await prisma.participation.groupBy({
+    by: ['userId'],
+    where: {
+      userId: { in: userIds },
+      payment_status: 'COMPLETED',
+      status: 'APPROVED',
+    },
+    _count: {
+      id: true,
+    },
+  });
+
+  const userMap = new Map(paidParticipationCounts.map(p => [p.userId, p._count.id]));
+
+  const usersWithStats = result.map((user) => {
+    const paidCount = userMap.get(user.id) || 0;
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      status: user.status,
+      profilePhoto: user.profilePhoto,
+      totalJoinedEvents: user.participation.length,
+      paidEventsCount: paidCount,
+      publishedEventsCount: user._count.events,
+    };
+  });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: usersWithStats,
+  };
+};
+
 const getMyInfo = async (userId: string) => {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -298,8 +404,6 @@ const getAdminDashboardInfo = async () => {
   };
 };
 
-
-
 const updateUserProfile = async (userId: string, req: Request) => {
     const file = req.file as IFile;
 
@@ -422,5 +526,6 @@ export const UserService = {
     updateUserProfile,
     getMyInfo,
     getMyDashboardInfo,
-    getAdminDashboardInfo
+    getAdminDashboardInfo,
+    getAllUsersWithStats
 };

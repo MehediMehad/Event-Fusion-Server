@@ -32,6 +32,20 @@ const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getAllUsersWithStats = catchAsync(async (req: Request, res: Response) => {
+    const filters = pick(req.query, ['searchTerm']);
+    const options = pick(req.query, ['page', 'limit']);
+    const result = await UserService.getAllUsersWithStats(filters, options);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Users with stats fetched successfully!',
+        meta: result.meta,
+        data: result.data
+    });
+});
+
 const changeProfileStatus = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await UserService.changeProfileStatus(id, req.body);
@@ -95,16 +109,18 @@ const getMyDashboardInfo = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-const getAdminDashboardInfo = catchAsync(async (req: Request, res: Response) => {
-    const result = await UserService.getAdminDashboardInfo();
+const getAdminDashboardInfo = catchAsync(
+    async (req: Request, res: Response) => {
+        const result = await UserService.getAdminDashboardInfo();
 
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: 'Dashboard data retrieved successfully!',
-        data: result
-    });
-});
+        sendResponse(res, {
+            statusCode: httpStatus.OK,
+            success: true,
+            message: 'Dashboard data retrieved successfully!',
+            data: result
+        });
+    }
+);
 
 export const UserController = {
     getMyDashboardInfo,
@@ -114,5 +130,6 @@ export const UserController = {
     getNonParticipants,
     updateUserProfile,
     getMyInfo,
-    getAdminDashboardInfo
+    getAdminDashboardInfo,
+    getAllUsersWithStats
 };
