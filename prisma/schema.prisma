@@ -54,6 +54,7 @@ model Events {
   invitation    Invitation[]
   participation Participation[]
   review        Review[]
+  Payment       Payment[]
 
   @@map("events")
 }
@@ -70,7 +71,7 @@ model Participation {
   // Relation
   user    User     @relation(fields: [userId], references: [id])
   event   Events   @relation(fields: [eventId], references: [id])
-  payment Payment? // ✅ No relation definition here
+  Payment Payment?
 
   @@unique([userId, eventId])
   @@map("participations")
@@ -78,7 +79,11 @@ model Participation {
 
 model Payment {
   id                 String        @id @default(uuid())
-  participation_id   String        @unique
+  participation_id   String?
+  participation      Participation @relation(fields: [participationId], references: [id])
+  participationId    String        @unique
+  eventId            String        @unique
+  event              Events        @relation(fields: [eventsId], references: [id])
   transactionId      String        @unique
   amount             Float
   payment_status     PaymentStatus
@@ -87,7 +92,7 @@ model Payment {
   updatedAt          DateTime      @updatedAt
 
   // ✅ Only define relation here
-  participation Participation @relation(fields: [participation_id], references: [id])
+  eventsId        String
 
   @@map("payments")
 }
