@@ -100,7 +100,6 @@ const registrationNewUser = (req) => __awaiter(void 0, void 0, void 0, function*
     };
 });
 const getAllFromDB = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(25, options);
     const { page, limit, skip, sortBy, sortOrder } = paginationHelper_1.paginationHelper.calculatePagination(options);
     const { searchTerm } = params, filterData = __rest(params, ["searchTerm"]);
     const andCondition = [];
@@ -162,6 +161,98 @@ const getAllFromDB = (params, options) => __awaiter(void 0, void 0, void 0, func
             total
         },
         data: result
+    };
+});
+const getAllUsersWithStats = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
+    const { page, limit, skip, sortBy, sortOrder } = paginationHelper_1.paginationHelper.calculatePagination(options);
+    const { searchTerm } = params, filterData = __rest(params, ["searchTerm"]);
+    const andCondition = [];
+    if (searchTerm) {
+        andCondition.push({
+            OR: ['name', 'email'].map((field) => ({
+                [field]: {
+                    contains: searchTerm,
+                    mode: 'insensitive',
+                },
+            })),
+        });
+    }
+    if (Object.keys(filterData).length > 0) {
+        andCondition.push({
+            AND: Object.keys(filterData).map((key) => ({
+                [key]: { equals: filterData[key] },
+            })),
+        });
+    }
+    const whereCondition = andCondition.length > 0 ? { AND: andCondition } : {};
+    const result = yield prisma_1.default.user.findMany({
+        where: whereCondition,
+        skip,
+        take: limit,
+        orderBy: sortBy && sortOrder
+            ? { [sortBy]: sortOrder }
+            : { createdAt: 'desc' },
+        select: {
+            id: true,
+            name: true,
+            profilePhoto: true,
+            email: true,
+            status: true,
+            events: {
+                select: {
+                    id: true,
+                },
+            },
+            participation: {
+                where: {
+                    status: 'APPROVED',
+                },
+                select: {
+                    id: true,
+                },
+            },
+            _count: {
+                select: {
+                    events: true,
+                },
+            },
+        },
+    });
+    const total = yield prisma_1.default.user.count({ where: whereCondition });
+    // Manually count paid events
+    const userIds = result.map(u => u.id);
+    const paidParticipationCounts = yield prisma_1.default.participation.groupBy({
+        by: ['userId'],
+        where: {
+            userId: { in: userIds },
+            payment_status: 'COMPLETED',
+            status: 'APPROVED',
+        },
+        _count: {
+            id: true,
+        },
+    });
+    const userMap = new Map(paidParticipationCounts.map(p => [p.userId, p._count.id]));
+    const usersWithStats = result.map((user) => {
+        const paidCount = userMap.get(user.id) || 0;
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            status: user.status,
+            profilePhoto: user.profilePhoto,
+            totalJoinedEvents: user.participation.length,
+            paidEventsCount: paidCount,
+            publishedEventsCount: user._count.events,
+        };
+    });
+    return {
+        meta: {
+            page,
+            limit,
+            total,
+        },
+        data: usersWithStats,
     };
 });
 const getMyInfo = (userId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -226,7 +317,7 @@ const getMyDashboardInfo = (userId) => __awaiter(void 0, void 0, void 0, functio
             }
         }
     });
-    // Total Earnings from paid events
+    // Total Earnings from paid events  // TODO
     // const totalEarnings = await prisma.payment.aggregate({
     //     _sum: {
     //         amount: true
@@ -250,6 +341,62 @@ const getMyDashboardInfo = (userId) => __awaiter(void 0, void 0, void 0, functio
             pendingInvitations,
             totalReviews,
             // totalEarnings: totalEarnings._sum.amount || 0 // TODO
+        }
+    };
+});
+const getAdminDashboardInfo = () => __awaiter(void 0, void 0, void 0, function* () {
+    // Total Events (excluding deleted ones)
+    const totalEvents = yield prisma_1.default.events.count({
+        where: {
+            isDeleted: false
+        }
+    });
+    // Total Public Events
+    const totalPublicEvents = yield prisma_1.default.events.count({
+        where: {
+            isDeleted: false,
+            is_public: true
+        }
+    });
+    // Total Private Events
+    const totalPrivateEvents = yield prisma_1.default.events.count({
+        where: {
+            isDeleted: false,
+            is_public: false
+        }
+    });
+    // Total Approved Participants across all events
+    const totalParticipants = yield prisma_1.default.participation.count({
+        where: {
+            status: 'APPROVED'
+        }
+    });
+    // Total users
+    const totalUser = yield prisma_1.default.user.count({
+        where: {
+            status: 'ACTIVE'
+        }
+    });
+    // Total unique Organizers (Users who created at least one event)
+    const totalOrganizers = yield prisma_1.default.user.count({
+        where: {
+            isDeleted: false,
+            role: 'USER',
+            events: {
+                some: {
+                    isDeleted: false
+                }
+            }
+        }
+    });
+    return {
+        dashboardSummary: {
+            totalEvents,
+            totalPublicEvents,
+            totalPrivateEvents,
+            totalParticipants,
+            totalOrganizers,
+            totalUser
         }
     };
 });
@@ -362,5 +509,7 @@ exports.UserService = {
     getNonParticipants,
     updateUserProfile,
     getMyInfo,
-    getMyDashboardInfo
+    getMyDashboardInfo,
+    getAdminDashboardInfo,
+    getAllUsersWithStats
 };

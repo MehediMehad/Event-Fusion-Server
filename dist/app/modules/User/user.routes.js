@@ -27,4 +27,6 @@ router.put('/update-profile', fileUploader_1.fileUploader.upload.single('file'),
 router.patch('/:id/status', (0, auth_1.default)(user_constant_1.USER_ROLE.ADMIN), (0, validateRequest_1.validateRequest)(user_validation_1.UserValidation.updateStatus), user_controller_1.UserController.changeProfileStatus);
 router.get('/me', (0, auth_1.default)('ADMIN', 'USER'), user_controller_1.UserController.getMyInfo);
 router.get('/get-my-dashboard-info', (0, auth_1.default)('ADMIN', 'USER'), user_controller_1.UserController.getMyDashboardInfo);
+router.get('/get-admin-dashboard-info', (0, auth_1.default)('ADMIN', 'USER'), user_controller_1.UserController.getAdminDashboardInfo);
+router.get('/admin/users', user_controller_1.UserController.getAllUsersWithStats);
 exports.UserRoutes = router;

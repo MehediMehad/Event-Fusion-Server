@@ -40,6 +40,18 @@ const getAllFromDB = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0
         data: result.data
     });
 }));
+const getAllUsersWithStats = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const filters = (0, pick_1.default)(req.query, ['searchTerm']);
+    const options = (0, pick_1.default)(req.query, ['page', 'limit']);
+    const result = yield user_service_1.UserService.getAllUsersWithStats(filters, options);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Users with stats fetched successfully!',
+        meta: result.meta,
+        data: result.data
+    });
+}));
 const changeProfileStatus = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const result = yield user_service_1.UserService.changeProfileStatus(id, req.body);
@@ -91,6 +103,15 @@ const getMyDashboardInfo = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(
         data: result
     });
 }));
+const getAdminDashboardInfo = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield user_service_1.UserService.getAdminDashboardInfo();
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Dashboard data retrieved successfully!',
+        data: result
+    });
+}));
 exports.UserController = {
     getMyDashboardInfo,
     registrationNewUser,
@@ -98,5 +119,7 @@ exports.UserController = {
     changeProfileStatus,
     getNonParticipants,
     updateUserProfile,
-    getMyInfo
+    getMyInfo,
+    getAdminDashboardInfo,
+    getAllUsersWithStats
 };
