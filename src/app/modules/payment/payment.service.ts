@@ -5,30 +5,20 @@ import ApiError from '../../errors/APIError';
 import { HttpStatusCode } from 'axios';
 // Removed incorrect import of `undefined` from 'zod'
 
-const initPayment = async (eventId: string) => {
-    const eventData = await prisma.events.findFirstOrThrow({
-        where: { id: eventId },
-        include: {
-            organizer: true,
-            participation: {
-                where: {
-                    eventId: eventId
-                },
-                include: {
-                    user: true
-                }
-            }
+const initPayment = async (eventId: string, userId: string) => {    
+    const user = await prisma.user.findUniqueOrThrow({
+        where: {
+            id: userId
         }
     });
-    console.log({eventData});
-    
+    const event = await prisma.events.findFirstOrThrow({
+        where: {
+            id: eventId
+        }
+    });
 
-    // Get the first participation entry
-    const participationData = eventData.participation[0];
-
-    // Check if participation data exists
-    if (!participationData) {
-        throw new ApiError(HttpStatusCode.NotFound, "No participation found for this event.");
+    if (!event) {
+        throw new ApiError(HttpStatusCode.NotFound, 'Event not found');
     }
 
     // Generate unique transaction ID
@@ -38,10 +28,10 @@ const initPayment = async (eventId: string) => {
     await prisma.payment.create({
         data: {
             transactionId,
-            amount: eventData.registration_fee,
+            amount: event.registration_fee,
             payment_status: PaymentStatus.PAID,
             eventId,
-            participationId: participationData.id,
+            userId,
             paymentGatewayData: {}, // Add appropriate default or mock data here
             eventsId: eventId // Assuming `eventId` corresponds to `eventsId`
         }
@@ -49,12 +39,12 @@ const initPayment = async (eventId: string) => {
 
     // Prepare data for SSLCommerz
     const initPaymentData = {
-        amount: eventData.registration_fee,
+        amount: event.registration_fee,
         transactionId,
-        name: participationData?.user.name || 'N/A',
-        email: participationData?.user.email || 'N/A',
+        name: user?.name || 'N/A',
+        email: user.email || 'N/A',
         address: 'N/A',
-        contactNumber: participationData?.user.contactNumber || 'N/A'
+        contactNumber: user.contactNumber || 'N/A'
     };
 
     const result = await SSLService.initPayment(initPaymentData);
@@ -76,11 +66,9 @@ const validatePayment = async (payload: any) => {
 
     if (response?.status !== 'VALID') {
         return {
-            message: "Payment Failed!"
-        }
+            message: 'Payment Failed!'
+        };
     }
-
-    
 
     await prisma.$transaction(async (tx) => {
         const updatedPaymentData = await tx.payment.update({
@@ -94,12 +82,11 @@ const validatePayment = async (payload: any) => {
         });
 
         // Update participation's payment status
-        await tx.participation.update({
-            where: {
-                id: updatedPaymentData.participationId // Use a unique identifier like `id` or `userId_eventId`
-            },
+        await tx.participation.create({
             data: {
-                status: ParticipationStatus.PENDING
+                eventId: updatedPaymentData.eventId,
+                status: ParticipationStatus.PENDING,
+                userId: updatedPaymentData.userId // Assuming `participationId` corresponds to `userId`
             }
         });
     });

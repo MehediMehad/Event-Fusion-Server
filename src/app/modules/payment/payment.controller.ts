@@ -6,9 +6,8 @@ import { catchAsync } from "../../../shared/catchAsync";
 
 const initPayment = catchAsync(async (req: Request, res: Response) => {
     const { eventId } = req.params;
-
-    
-    const result = await PaymentService.initPayment(eventId);
+    const {userId}= req.body
+    const result = await PaymentService.initPayment(eventId, userId);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
