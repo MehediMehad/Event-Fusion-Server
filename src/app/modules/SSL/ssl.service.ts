@@ -5,7 +5,6 @@ import { IPaymentData } from "./ssl.interface";
 import ApiError from "../../errors/APIError";
 
 const initPayment = async (paymentData: IPaymentData) => {
-    console.log('🚀🚀',paymentData);
     
     try {
         const data = {

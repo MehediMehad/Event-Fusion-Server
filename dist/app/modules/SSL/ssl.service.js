@@ -18,7 +18,6 @@ const config_1 = __importDefault(require("../../../config"));
 const http_status_1 = __importDefault(require("http-status"));
 const APIError_1 = __importDefault(require("../../errors/APIError"));
 const initPayment = (paymentData) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('🚀🚀', paymentData);
     try {
         const data = {
             store_id: config_1.default.ssl.storeId,

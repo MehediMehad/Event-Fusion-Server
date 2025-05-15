@@ -18,9 +18,8 @@ const sendResponse_1 = __importDefault(require("../../../shared/sendResponse"));
 const http_status_1 = __importDefault(require("http-status"));
 const catchAsync_1 = require("../../../shared/catchAsync");
 const initPayment = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     const { eventId } = req.params;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId; // Assuming userId is available in req.user
+    const { userId } = req.body;
     const result = yield payment_service_1.PaymentService.initPayment(eventId, userId);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
@@ -30,7 +29,6 @@ const initPayment = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0,
     });
 }));
 const validatePayment = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("🚀🚀🚀", req.query);
     const result = yield payment_service_1.PaymentService.validatePayment(req.query);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,

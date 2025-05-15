@@ -16,33 +16,47 @@ exports.PaymentService = void 0;
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const client_1 = require("@prisma/client");
 const ssl_service_1 = require("../SSL/ssl.service");
+const APIError_1 = __importDefault(require("../../errors/APIError"));
+const axios_1 = require("axios");
 // Removed incorrect import of `undefined` from 'zod'
 const initPayment = (eventId, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const eventData = yield prisma_1.default.events.findFirstOrThrow({
-        where: { id: eventId },
-        include: {
-            organizer: true,
-            participation: {
-                where: {
-                    userId: userId
-                },
-                include: {
-                    user: true
-                }
-            }
+    const user = yield prisma_1.default.user.findUniqueOrThrow({
+        where: {
+            id: userId
         }
     });
-    const participationData = eventData.participation[0];
+    const event = yield prisma_1.default.events.findFirstOrThrow({
+        where: {
+            id: eventId
+        }
+    });
+    if (!event) {
+        throw new APIError_1.default(axios_1.HttpStatusCode.NotFound, 'Event not found');
+    }
+    // Generate unique transaction ID
+    const transactionId = `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    // Save payment record in DB
+    yield prisma_1.default.payment.create({
+        data: {
+            transactionId,
+            amount: event.registration_fee,
+            payment_status: client_1.PaymentStatus.PAID,
+            eventId,
+            userId,
+            paymentGatewayData: {}, // Add appropriate default or mock data here
+            eventsId: eventId // Assuming `eventId` corresponds to `eventsId`
+        }
+    });
+    // Prepare data for SSLCommerz
     const initPaymentData = {
-        amount: eventData.registration_fee,
-        transactionId: '497977',
-        name: (participationData === null || participationData === void 0 ? void 0 : participationData.user.name) || 'N/A',
-        email: (participationData === null || participationData === void 0 ? void 0 : participationData.user.email) || 'N/A',
+        amount: event.registration_fee,
+        transactionId,
+        name: (user === null || user === void 0 ? void 0 : user.name) || 'N/A',
+        email: user.email || 'N/A',
         address: 'N/A',
-        contactNumber: (participationData === null || participationData === void 0 ? void 0 : participationData.user.contactNumber) || 'N/A'
+        contactNumber: user.contactNumber || 'N/A'
     };
     const result = yield ssl_service_1.SSLService.initPayment(initPaymentData);
-    console.log(result);
     return {
         paymentUrl: result.GatewayPageURL
     };
@@ -50,16 +64,15 @@ const initPayment = (eventId, userId) => __awaiter(void 0, void 0, void 0, funct
 // ssl commerz ipn listener query example:
 // amount=1150.00&bank_tran_id=...&status=VALID&tran_id=...&val_id=...
 const validatePayment = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!payload || !payload.status || !(payload.status)) {
-        return { message: "INVALID PAYMENT" };
+    if (!payload || !payload.status || !payload.status) {
+        return { message: 'INVALID PAYMENT' };
     }
-    // const response = await SSLService.validatePayment(payload);
-    // if (response?.status !== 'VALID') {
-    //     return {
-    //         message: "Payment Failed!"
-    //     }
-    // }
-    const response = payload;
+    const response = yield ssl_service_1.SSLService.validatePayment(payload);
+    if ((response === null || response === void 0 ? void 0 : response.status) !== 'VALID') {
+        return {
+            message: 'Payment Failed!'
+        };
+    }
     yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
         const updatedPaymentData = yield tx.payment.update({
             where: {
@@ -71,12 +84,11 @@ const validatePayment = (payload) => __awaiter(void 0, void 0, void 0, function*
             }
         });
         // Update participation's payment status
-        yield tx.participation.update({
-            where: {
-                id: updatedPaymentData.participationId // Use a unique identifier like `id` or `userId_eventId`
-            },
+        yield tx.participation.create({
             data: {
-                status: client_1.ParticipationStatus.PENDING
+                eventId: updatedPaymentData.eventId,
+                status: client_1.ParticipationStatus.PENDING,
+                userId: updatedPaymentData.userId // Assuming `participationId` corresponds to `userId`
             }
         });
     }));

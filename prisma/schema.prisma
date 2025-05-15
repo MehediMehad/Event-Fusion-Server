@@ -63,15 +63,16 @@ model Events {
 model Participation {
   id             String                     @id @default(uuid())
   userId         String
-  eventId        String                     
+  eventId        String
   status         ParticipationStatus        @default(PENDING)
   payment_status ParticipationPaymentStatus @default(FREE)
   paymentId      String?
   joined_at      DateTime                   @default(now())
 
   // Relation
-  user    User     @relation(fields: [userId], references: [id])
-  event   Events   @relation(fields: [eventId], references: [id])
+  user    User      @relation(fields: [userId], references: [id])
+  event   Events    @relation(fields: [eventId], references: [id])
+  Payment Payment[]
 
   @@unique([userId, eventId])
   @@map("participations")
@@ -79,8 +80,8 @@ model Participation {
 
 model Payment {
   id                 String        @id @default(uuid())
-  participation_id   String?    
-  eventId            String        
+  participation_id   String?
+  eventId            String
   event              Events        @relation(fields: [eventsId], references: [id])
   transactionId      String        @unique
   amount             Float
@@ -90,9 +91,10 @@ model Payment {
   updatedAt          DateTime      @updatedAt
 
   // ✅ Only define relation here
-  eventsId String
-  userId   String
-  user     User   @relation(fields: [userId], references: [id])
+  eventsId      String
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  participation Participation? @relation(fields: [participation_id], references: [id])
 
   @@map("payments")
 }

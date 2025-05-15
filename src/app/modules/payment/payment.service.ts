@@ -5,54 +5,72 @@ import ApiError from '../../errors/APIError';
 import { HttpStatusCode } from 'axios';
 // Removed incorrect import of `undefined` from 'zod'
 
-const initPayment = async (eventId: string, userId: string) => {    
-    const user = await prisma.user.findUniqueOrThrow({
-        where: {
-            id: userId
+const initPayment = async (eventId: string, userId: string) => {
+    const result = await prisma.$transaction(async (prisma) => {
+        // Get user
+        const user = await prisma.user.findUniqueOrThrow({
+            where: {
+                id: userId
+            }
+        });
+        // Get event
+        const event = await prisma.events.findFirstOrThrow({
+            where: {
+                id: eventId
+            }
+        });
+
+        if (!event) {
+            throw new ApiError(HttpStatusCode.NotFound, 'Event not found');
         }
-    });
-    const event = await prisma.events.findFirstOrThrow({
-        where: {
-            id: eventId
-        }
-    });
 
-    if (!event) {
-        throw new ApiError(HttpStatusCode.NotFound, 'Event not found');
-    }
+        // Generate unique transaction ID
+        const transactionId = `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // Generate unique transaction ID
-    const transactionId = `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        // Create Participation Record
+        const participation = await prisma.participation.create({
+            data: {
+                userId,
+                eventId,
+                status: 'PENDING',
+                payment_status:
+                    event.registration_fee === 0 ? 'FREE' : 'COMPLETED'
+            }
+        });
+        // Save payment record in DB
+        await prisma.payment.create({
+            data: {
+                participation_id: participation.id,
+                transactionId,
+                amount: event.registration_fee,
+                payment_status: PaymentStatus.PAID,
+                eventId,
+                userId,
+                paymentGatewayData: {}, // Add appropriate default or mock data here
+                eventsId: eventId // Assuming `eventId` corresponds to `eventsId`
+            }
+        });
 
-    // Save payment record in DB
-    await prisma.payment.create({
-        data: {
-            transactionId,
+        // Prepare data for SSLCommerz
+        const initPaymentData = {
             amount: event.registration_fee,
-            payment_status: PaymentStatus.PAID,
-            eventId,
-            userId,
-            paymentGatewayData: {}, // Add appropriate default or mock data here
-            eventsId: eventId // Assuming `eventId` corresponds to `eventsId`
-        }
-    });
+            transactionId,
+            name: user?.name || 'N/A',
+            email: user.email || 'N/A',
+            address: 'N/A',
+            contactNumber: user.contactNumber || 'N/A'
+        };
 
-    // Prepare data for SSLCommerz
-    const initPaymentData = {
-        amount: event.registration_fee,
-        transactionId,
-        name: user?.name || 'N/A',
-        email: user.email || 'N/A',
-        address: 'N/A',
-        contactNumber: user.contactNumber || 'N/A'
-    };
+        const sslResult = await SSLService.initPayment(initPaymentData);
 
-    const result = await SSLService.initPayment(initPaymentData);
+        return {
+            paymentUrl: sslResult.GatewayPageURL,
+            participationId: participation.id
+        };
+    }); // Close prisma.$transaction
 
-    return {
-        paymentUrl: result.GatewayPageURL
-    };
-};
+    return result;
+}; // Close initPayment
 
 // ssl commerz ipn listener query example:
 // amount=1150.00&bank_tran_id=...&status=VALID&tran_id=...&val_id=...

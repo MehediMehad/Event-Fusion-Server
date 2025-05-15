@@ -371,7 +371,6 @@ const updateIntoDB = async (req: Request, id: string): Promise<PrismaEvent> => {
 // TODO:
 const joinEvent = async (req: Request) => {
     const userId = req.user.userId;
-
     const existingEvent = await prisma.events.findFirstOrThrow({
         where: {
             id: req.body.eventId

@@ -21,7 +21,7 @@ router.get('/:id', EventsController.getByIdFromDB);
 
 router.post(
     '/',
-    auth(USER_ROLE.USER),
+    auth(USER_ROLE.USER, USER_ROLE.ADMIN),
     fileUploader.upload.single('file'),
     (req: Request, res: Response, next: NextFunction) => {
         req.body = EventsValidation.createEvents.parse(
