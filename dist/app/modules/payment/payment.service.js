@@ -20,47 +20,63 @@ const APIError_1 = __importDefault(require("../../errors/APIError"));
 const axios_1 = require("axios");
 // Removed incorrect import of `undefined` from 'zod'
 const initPayment = (eventId, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield prisma_1.default.user.findUniqueOrThrow({
-        where: {
-            id: userId
+    const result = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+        // Get user
+        const user = yield prisma.user.findUniqueOrThrow({
+            where: {
+                id: userId
+            }
+        });
+        // Get event
+        const event = yield prisma.events.findFirstOrThrow({
+            where: {
+                id: eventId
+            }
+        });
+        if (!event) {
+            throw new APIError_1.default(axios_1.HttpStatusCode.NotFound, 'Event not found');
         }
-    });
-    const event = yield prisma_1.default.events.findFirstOrThrow({
-        where: {
-            id: eventId
-        }
-    });
-    if (!event) {
-        throw new APIError_1.default(axios_1.HttpStatusCode.NotFound, 'Event not found');
-    }
-    // Generate unique transaction ID
-    const transactionId = `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    // Save payment record in DB
-    yield prisma_1.default.payment.create({
-        data: {
-            transactionId,
+        // Generate unique transaction ID
+        const transactionId = `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        // Create Participation Record
+        const participation = yield prisma.participation.create({
+            data: {
+                userId,
+                eventId,
+                status: 'PENDING',
+                payment_status: event.registration_fee === 0 ? 'FREE' : 'COMPLETED'
+            }
+        });
+        // Save payment record in DB
+        yield prisma.payment.create({
+            data: {
+                participation_id: participation.id,
+                transactionId,
+                amount: event.registration_fee,
+                payment_status: client_1.PaymentStatus.PAID,
+                eventId,
+                userId,
+                paymentGatewayData: {}, // Add appropriate default or mock data here
+                eventsId: eventId // Assuming `eventId` corresponds to `eventsId`
+            }
+        });
+        // Prepare data for SSLCommerz
+        const initPaymentData = {
             amount: event.registration_fee,
-            payment_status: client_1.PaymentStatus.PAID,
-            eventId,
-            userId,
-            paymentGatewayData: {}, // Add appropriate default or mock data here
-            eventsId: eventId // Assuming `eventId` corresponds to `eventsId`
-        }
-    });
-    // Prepare data for SSLCommerz
-    const initPaymentData = {
-        amount: event.registration_fee,
-        transactionId,
-        name: (user === null || user === void 0 ? void 0 : user.name) || 'N/A',
-        email: user.email || 'N/A',
-        address: 'N/A',
-        contactNumber: user.contactNumber || 'N/A'
-    };
-    const result = yield ssl_service_1.SSLService.initPayment(initPaymentData);
-    return {
-        paymentUrl: result.GatewayPageURL
-    };
-});
+            transactionId,
+            name: (user === null || user === void 0 ? void 0 : user.name) || 'N/A',
+            email: user.email || 'N/A',
+            address: 'N/A',
+            contactNumber: user.contactNumber || 'N/A'
+        };
+        const sslResult = yield ssl_service_1.SSLService.initPayment(initPaymentData);
+        return {
+            paymentUrl: sslResult.GatewayPageURL,
+            participationId: participation.id
+        };
+    })); // Close prisma.$transaction
+    return result;
+}); // Close initPayment
 // ssl commerz ipn listener query example:
 // amount=1150.00&bank_tran_id=...&status=VALID&tran_id=...&val_id=...
 const validatePayment = (payload) => __awaiter(void 0, void 0, void 0, function* () {

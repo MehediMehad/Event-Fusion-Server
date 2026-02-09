@@ -16,7 +16,7 @@ router.get('/', events_controller_1.EventsController.getAllUpcomingEvent);
 router.get('/all-details', events_controller_1.EventsController.getAllEventsDetailsPage);
 router.get('/my-events', (0, auth_1.default)('USER', 'ADMIN'), events_controller_1.EventsController.getMyEventsFromDB);
 router.get('/:id', events_controller_1.EventsController.getByIdFromDB);
-router.post('/', (0, auth_1.default)(user_constant_1.USER_ROLE.USER), fileUploader_1.fileUploader.upload.single('file'), (req, res, next) => {
+router.post('/', (0, auth_1.default)(user_constant_1.USER_ROLE.USER, user_constant_1.USER_ROLE.ADMIN), fileUploader_1.fileUploader.upload.single('file'), (req, res, next) => {
     req.body = events_validation_1.EventsValidation.createEvents.parse(JSON.parse(req.body.data));
     return events_controller_1.EventsController.createEvent(req, res, next);
 });
