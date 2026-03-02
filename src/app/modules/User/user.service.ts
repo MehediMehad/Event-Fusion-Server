@@ -12,6 +12,62 @@ import config from '../../../config';
 import ApiError from '../../errors/APIError';
 import httpStatus from 'http-status';
 
+const createDemoUser = async () => {
+    const isUserExists = await prisma.user.findFirst({
+        where: {
+            email: { in: ['tanvir@gmail.com', 'rakib@gmail.com', 'niloy@gmail.com'] }
+        }
+    });
+
+    if (isUserExists) {
+        console.log("demo user already created...⚠️");
+        return;
+    };
+
+    const hashPassword: string = await bcrypt.hash('12345678', 12);
+    await prisma.user.createMany({
+        data: [
+            // USER
+            {
+                email: 'tanvir@gmail.com',
+                profilePhoto: 'https://res.cloudinary.com/dxbpbbpbh/image/upload/v1772428697/download%20%281%29-1772428694900-496498378.jpg',
+                name: 'Tanvir Ahmed',
+                contactNumber: '1234567890',
+                password: hashPassword,
+                role: UserRole.USER,
+                gender: 'MALE',
+                isDemo: true
+            },
+
+            // ORGANIZER
+            {
+                email: 'rakib@gmail.com',
+                profilePhoto: 'https://res.cloudinary.com/dxbpbbpbh/image/upload/v1772428697/download%20%281%29-1772428694900-496498378.jpg',
+                name: 'Rakib Hasan',
+                contactNumber: '1234567890',
+                password: hashPassword,
+                role: UserRole.USER,
+                gender: 'MALE',
+                isDemo: true
+            },
+
+            // ADMIN
+            {
+                email: 'niloy@gmail.com',
+                profilePhoto: 'https://res.cloudinary.com/dxbpbbpbh/image/upload/v1772428697/download%20%281%29-1772428694900-496498378.jpg',
+                name: 'Niloy Ahmed',
+                contactNumber: '1234567890',
+                password: hashPassword,
+                role: UserRole.ADMIN,
+                gender: 'MALE',
+                isDemo: true
+            }
+        ]
+    });
+
+    console.log("demo user created ✅");
+};
+
 const registrationNewUser = async (req: Request) => {
     const file = req.file as IFile;
 
@@ -101,11 +157,11 @@ const getAllFromDB = async (params: any, options: IPaginationOptions) => {
         orderBy:
             sortBy && sortOrder
                 ? {
-                      [sortBy]: sortOrder
-                  }
+                    [sortBy]: sortOrder
+                }
                 : {
-                      createdAt: 'desc'
-                  },
+                    createdAt: 'desc'
+                },
         select: {
             id: true,
             email: true,
@@ -137,109 +193,109 @@ const getAllFromDB = async (params: any, options: IPaginationOptions) => {
 };
 
 const getAllUsersWithStats = async (params: any, options: IPaginationOptions) => {
-  const { page, limit, skip, sortBy, sortOrder } =
-    paginationHelper.calculatePagination(options);
+    const { page, limit, skip, sortBy, sortOrder } =
+        paginationHelper.calculatePagination(options);
 
-  const { searchTerm, ...filterData } = params;
-  const andCondition: Prisma.UserWhereInput[] = [];
+    const { searchTerm, ...filterData } = params;
+    const andCondition: Prisma.UserWhereInput[] = [];
 
-  if (searchTerm) {
-    andCondition.push({
-      OR: ['name', 'email'].map((field) => ({
-        [field]: {
-          contains: searchTerm,
-          mode: 'insensitive',
-        },
-      })),
-    });
-  }
+    if (searchTerm) {
+        andCondition.push({
+            OR: ['name', 'email'].map((field) => ({
+                [field]: {
+                    contains: searchTerm,
+                    mode: 'insensitive',
+                },
+            })),
+        });
+    }
 
-  if (Object.keys(filterData).length > 0) {
-    andCondition.push({
-      AND: Object.keys(filterData).map((key) => ({
-        [key]: { equals: (filterData as any)[key] },
-      })),
-    });
-  }
+    if (Object.keys(filterData).length > 0) {
+        andCondition.push({
+            AND: Object.keys(filterData).map((key) => ({
+                [key]: { equals: (filterData as any)[key] },
+            })),
+        });
+    }
 
-  const whereCondition = andCondition.length > 0 ? { AND: andCondition } : {};
+    const whereCondition = andCondition.length > 0 ? { AND: andCondition } : {};
 
-  const result = await prisma.user.findMany({
-    where: whereCondition,
-    skip,
-    take: limit,
-    orderBy:
-      sortBy && sortOrder
-        ? { [sortBy]: sortOrder }
-        : { createdAt: 'desc' },
-    select: {
-      id: true,
-      name: true,
-      profilePhoto: true,
-      email: true,
-      status: true,
-      events: {
+    const result = await prisma.user.findMany({
+        where: whereCondition,
+        skip,
+        take: limit,
+        orderBy:
+            sortBy && sortOrder
+                ? { [sortBy]: sortOrder }
+                : { createdAt: 'desc' },
         select: {
-          id: true,
+            id: true,
+            name: true,
+            profilePhoto: true,
+            email: true,
+            status: true,
+            events: {
+                select: {
+                    id: true,
+                },
+            },
+            participation: {
+                where: {
+                    status: 'APPROVED',
+                },
+                select: {
+                    id: true,
+                },
+            },
+            _count: {
+                select: {
+                    events: true,
+                },
+            },
         },
-      },
-      participation: {
+    });
+
+    const total = await prisma.user.count({ where: whereCondition });
+
+    // Manually count paid events
+    const userIds = result.map(u => u.id);
+    const paidParticipationCounts = await prisma.participation.groupBy({
+        by: ['userId'],
         where: {
-          status: 'APPROVED',
+            userId: { in: userIds },
+            payment_status: 'COMPLETED',
+            status: 'APPROVED',
         },
-        select: {
-          id: true,
+        _count: {
+            id: true,
         },
-      },
-      _count: {
-        select: {
-          events: true,
-        },
-      },
-    },
-  });
+    });
 
-  const total = await prisma.user.count({ where: whereCondition });
+    const userMap = new Map(paidParticipationCounts.map(p => [p.userId, p._count.id]));
 
-  // Manually count paid events
-  const userIds = result.map(u => u.id);
-  const paidParticipationCounts = await prisma.participation.groupBy({
-    by: ['userId'],
-    where: {
-      userId: { in: userIds },
-      payment_status: 'COMPLETED',
-      status: 'APPROVED',
-    },
-    _count: {
-      id: true,
-    },
-  });
+    const usersWithStats = result.map((user) => {
+        const paidCount = userMap.get(user.id) || 0;
 
-  const userMap = new Map(paidParticipationCounts.map(p => [p.userId, p._count.id]));
-
-  const usersWithStats = result.map((user) => {
-    const paidCount = userMap.get(user.id) || 0;
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            status: user.status,
+            profilePhoto: user.profilePhoto,
+            totalJoinedEvents: user.participation.length,
+            paidEventsCount: paidCount,
+            publishedEventsCount: user._count.events,
+        };
+    });
 
     return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      status: user.status,
-      profilePhoto: user.profilePhoto,
-      totalJoinedEvents: user.participation.length,
-      paidEventsCount: paidCount,
-      publishedEventsCount: user._count.events,
+        meta: {
+            page,
+            limit,
+            total,
+        },
+        data: usersWithStats,
     };
-  });
-
-  return {
-    meta: {
-      page,
-      limit,
-      total,
-    },
-    data: usersWithStats,
-  };
 };
 
 const getMyInfo = async (userId: string) => {
@@ -343,65 +399,65 @@ const getMyDashboardInfo = async (userId: string) => {
 };
 
 const getAdminDashboardInfo = async () => {
-  // Total Events (excluding deleted ones)
-  const totalEvents = await prisma.events.count({
-    where: {
-      isDeleted: false
-    }
-  });
-
-  // Total Public Events
-  const totalPublicEvents = await prisma.events.count({
-    where: {
-      isDeleted: false,
-      is_public: true
-    }
-  });
-
-  // Total Private Events
-  const totalPrivateEvents = await prisma.events.count({
-    where: {
-      isDeleted: false,
-      is_public: false
-    }
-  });
-
-  // Total Approved Participants across all events
-  const totalParticipants = await prisma.participation.count({
-    where: {
-      status: 'APPROVED'
-    }
-  });
-  // Total users
-  const totalUser = await prisma.user.count({
-    where: {
-      status: 'ACTIVE'
-    }
-  });
-
-  // Total unique Organizers (Users who created at least one event)
-  const totalOrganizers = await prisma.user.count({
-    where: {
-      isDeleted: false,
-      role: 'USER',
-      events: {
-        some: {
-          isDeleted: false
+    // Total Events (excluding deleted ones)
+    const totalEvents = await prisma.events.count({
+        where: {
+            isDeleted: false
         }
-      }
-    }
-  });
+    });
 
-  return {
-    dashboardSummary: {
-      totalEvents,
-      totalPublicEvents,
-      totalPrivateEvents,
-      totalParticipants,
-      totalOrganizers,
-      totalUser
-    }
-  };
+    // Total Public Events
+    const totalPublicEvents = await prisma.events.count({
+        where: {
+            isDeleted: false,
+            is_public: true
+        }
+    });
+
+    // Total Private Events
+    const totalPrivateEvents = await prisma.events.count({
+        where: {
+            isDeleted: false,
+            is_public: false
+        }
+    });
+
+    // Total Approved Participants across all events
+    const totalParticipants = await prisma.participation.count({
+        where: {
+            status: 'APPROVED'
+        }
+    });
+    // Total users
+    const totalUser = await prisma.user.count({
+        where: {
+            status: 'ACTIVE'
+        }
+    });
+
+    // Total unique Organizers (Users who created at least one event)
+    const totalOrganizers = await prisma.user.count({
+        where: {
+            isDeleted: false,
+            role: 'USER',
+            events: {
+                some: {
+                    isDeleted: false
+                }
+            }
+        }
+    });
+
+    return {
+        dashboardSummary: {
+            totalEvents,
+            totalPublicEvents,
+            totalPrivateEvents,
+            totalParticipants,
+            totalOrganizers,
+            totalUser
+        }
+    };
 };
 
 const updateUserProfile = async (userId: string, req: Request) => {
@@ -519,6 +575,7 @@ const getNonParticipants = async (eventId: string) => {
 };
 
 export const UserService = {
+    createDemoUser,
     registrationNewUser,
     getAllFromDB,
     changeProfileStatus,
