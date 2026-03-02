@@ -83,7 +83,7 @@ const getAllUpcomingEvent = async () => {
         where: { heroSection: true },
         orderBy: { updatedAt: 'asc' },
         include: { organizer: true }
-    });    
+    });
 
     const filteredEvents = upcomingEvents
         .filter(({ date_time }) => isDateInFuture(date_time, now))

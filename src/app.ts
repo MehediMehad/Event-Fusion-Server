@@ -4,8 +4,12 @@ import cookieParser from 'cookie-parser';
 import router from './app/routes';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import httpStatus from 'http-status';
+import { demoInfoCreateJob } from './app/job/demoInfoCreate';
 
 const app: Application = express();
+
+// Start the cron job
+demoInfoCreateJob();
 
 app.use(express.json()); // Parse JSON body
 app.use(cookieParser()); // Parse cookies

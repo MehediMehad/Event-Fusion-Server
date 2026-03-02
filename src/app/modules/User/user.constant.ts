@@ -13,3 +13,10 @@ export const USER_ROLE = {
     ADMIN: UserRole.ADMIN,
     USER: UserRole.USER
 } as const;
+
+
+export const DEMO_USER_EMAILS = {
+    ADMIN: 'rakib@gmail.com',
+    USER: 'niloy@gmail.com',
+    ORGANIZER: 'tanvir@gmail.com'
+}

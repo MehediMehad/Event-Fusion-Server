@@ -6,7 +6,7 @@ import { IFile } from '../../interface/file';
 import { Request } from 'express';
 import { IPaginationOptions } from '../../interface/pagination';
 import { paginationHelper } from '../../../helpers/paginationHelper';
-import { userSearchAbleFields } from './user.constant';
+import { DEMO_USER_EMAILS, userSearchAbleFields } from './user.constant';
 import { jwtHelpers, TPayloadToken } from '../../../helpers/jwtHelpers';
 import config from '../../../config';
 import ApiError from '../../errors/APIError';
@@ -15,7 +15,7 @@ import httpStatus from 'http-status';
 const createDemoUser = async () => {
     const isUserExists = await prisma.user.findFirst({
         where: {
-            email: { in: ['tanvir@gmail.com', 'rakib@gmail.com', 'niloy@gmail.com'] }
+            email: { in: [DEMO_USER_EMAILS.ADMIN, DEMO_USER_EMAILS.ORGANIZER, DEMO_USER_EMAILS.USER] }
         }
     });
 
@@ -29,7 +29,7 @@ const createDemoUser = async () => {
         data: [
             // USER
             {
-                email: 'tanvir@gmail.com',
+                email: DEMO_USER_EMAILS.USER,
                 profilePhoto: 'https://res.cloudinary.com/dxbpbbpbh/image/upload/v1772428697/download%20%281%29-1772428694900-496498378.jpg',
                 name: 'Tanvir Ahmed',
                 contactNumber: '1234567890',
@@ -41,7 +41,7 @@ const createDemoUser = async () => {
 
             // ORGANIZER
             {
-                email: 'rakib@gmail.com',
+                email: DEMO_USER_EMAILS.ORGANIZER,
                 profilePhoto: 'https://res.cloudinary.com/dxbpbbpbh/image/upload/v1772428697/download%20%281%29-1772428694900-496498378.jpg',
                 name: 'Rakib Hasan',
                 contactNumber: '1234567890',
@@ -53,7 +53,7 @@ const createDemoUser = async () => {
 
             // ADMIN
             {
-                email: 'niloy@gmail.com',
+                email: DEMO_USER_EMAILS.ADMIN,
                 profilePhoto: 'https://res.cloudinary.com/dxbpbbpbh/image/upload/v1772428697/download%20%281%29-1772428694900-496498378.jpg',
                 name: 'Niloy Ahmed',
                 contactNumber: '1234567890',
